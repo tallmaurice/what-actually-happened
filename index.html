@@ -14,19 +14,7 @@
         padding: 0; 
         /* Lock vertical scrolling completely */
         overflow-y: hidden;
-        overflow-x: hidden; /* We manage horizontal scrolling via an inner container */
-    }
-
-    .noise-overlay {
-        position: fixed;
-        top: 0;
-        left: 0;
-        width: 100vw;
-        height: 100vh;
-        pointer-events: none;
-        z-index: 1000;
-        opacity: 0.12;
-        background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)'/%3E%3C/svg%3E");
+        overflow-x: hidden; 
     }
 
     /* Native Horizontal Scrolling Container */
@@ -38,16 +26,16 @@
       white-space: nowrap; 
       position: relative;
       scroll-behavior: smooth;
-      -webkit-overflow-scrolling: touch; /* Momentum scrolling on iOS */
+      -webkit-overflow-scrolling: touch; 
     }
 
-    /* Hide the scrollbar itself for a cleaner look but keep functionality */
+    /* Hide the scrollbar itself for a cleaner look */
     .horizontal-scroll-wrapper::-webkit-scrollbar {
       display: none;
     }
     .horizontal-scroll-wrapper {
-      -ms-overflow-style: none;  /* IE and Edge */
-      scrollbar-width: none;  /* Firefox */
+      -ms-overflow-style: none;
+      scrollbar-width: none;
     }
 
     .timeline-track {
@@ -55,7 +43,6 @@
       flex-direction: row;
       align-items: center;
       height: 100%;
-      padding: 0 50vw; /* Starts in middle, ends in middle */
       position: relative;
     }
 
@@ -63,8 +50,8 @@
     .time-axis {
       position: absolute;
       top: 50%;
-      left: 0;
-      right: 0;
+      left: 100vw; /* Starts after the intro screen */
+      right: 50vw; /* Ends before the outro screen */
       height: 3px;
       background: #52525b; 
       z-index: 0;
@@ -89,7 +76,7 @@
       transition: transform 0.4s ease, box-shadow 0.4s ease, filter 0.4s ease;
       box-shadow: 0 10px 25px rgba(0,0,0,.55), inset 0 0 0 1px rgba(255,255,255,.06);
       z-index: 10;
-      white-space: normal; /* Override the wrapper's nowrap so text flows */
+      white-space: normal;
     }
 
     .event-card:hover {
@@ -97,6 +84,12 @@
       box-shadow: 0 22px 55px rgba(0,0,0,.9), inset 0 0 0 1px rgba(255,255,255,.12);
       z-index: 50;
     }
+
+    /* Randomize vertical alignment slightly for modern events */
+    .stagger-1 { margin-top: -3rem; }
+    .stagger-2 { margin-top: 2rem; }
+    .stagger-3 { margin-top: -1rem; }
+    .stagger-4 { margin-top: 4rem; }
 
     .empty-node {
       animation: pulse-node 2.5s infinite alternate ease-in-out;
@@ -127,37 +120,61 @@
 </head>
 <body>
 
-  <div class="noise-overlay"></div>
-
   <header class="fixed top-0 w-full z-50 bg-black shadow-lg border-b border-zinc-800">
     <div class="flex flex-col md:flex-row justify-between items-center px-4 py-2 font-bold tracking-wider">
-      <div class="text-zinc-400 text-xs md:text-sm">YEAR: <span id="current-year-display" class="text-white text-lg">1865</span></div>
+      <div class="text-zinc-400 text-xs md:text-sm">YEAR: <span id="current-year-display" class="text-white text-lg transition-all duration-300">1865</span></div>
       <div class="text-[10px] md:text-xs text-zinc-500 uppercase tracking-widest text-center mt-1 md:mt-0">
         Median Family Wealth: <span class="text-emerald-400">Black Families</span> vs. <span class="text-amber-500">White Families (Baseline)</span>
       </div>
-      <div class="text-zinc-400 text-xs md:text-sm mt-1 md:mt-0">GAP: <span id="current-ratio" class="text-emerald-400 text-lg">2¢ per $1</span></div>
+      <div class="text-zinc-400 text-xs md:text-sm mt-1 md:mt-0">GAP: <span id="current-ratio" class="text-emerald-400 text-lg transition-all duration-300">2¢ per $1</span></div>
     </div>
     <div class="h-3 w-full bg-zinc-800 relative">
       <div class="absolute top-0 left-0 h-full w-full bg-amber-500 opacity-80"></div>
-      <div id="black-wealth-bar" class="absolute top-0 left-0 h-full bg-emerald-500 transition-all duration-300 ease-out" style="width: 2%;"></div>
+      <div id="black-wealth-bar" class="absolute top-0 left-0 h-full bg-emerald-500 transition-all duration-500 ease-out" style="width: 2%;"></div>
     </div>
   </header>
-
-  <!-- Introductory Text -->
-  <section class="absolute left-0 h-screen w-screen flex flex-col justify-center items-center px-6 text-center z-10 pointer-events-none">
-    <h1 class="text-5xl md:text-7xl font-extrabold mb-6 tracking-tight text-white drop-shadow-2xl">What Actually Happened.</h1>
-    <p class="text-lg md:text-xl text-zinc-400 max-w-2xl drop-shadow-md">
-      A timeline of mass violence, policy, and the systematic extraction of foundational wealth from Black Americans.
-    </p>
-    <div class="mt-16 animate-pulse text-zinc-500 font-bold uppercase tracking-widest text-sm drop-shadow-md">
-      Swipe or Scroll Right ➔
-    </div>
-  </section>
 
   <div class="horizontal-scroll-wrapper" id="scroll-wrapper">
     <div class="timeline-track" id="timeline-track">
       <div class="time-axis"></div>
-      <!-- Injected by JS -->
+
+      <!-- INTRO SECTION (Takes up first screen) -->
+      <section class="w-screen h-screen flex-shrink-0 flex flex-col justify-center items-center px-6 text-center z-10 bg-zinc-950 relative whitespace-normal" data-year="1865" data-ratio="2">
+        <h1 class="text-5xl md:text-7xl font-extrabold mb-6 tracking-tight text-white drop-shadow-2xl">What Actually Happened.</h1>
+        <p class="text-lg md:text-xl text-zinc-400 max-w-2xl drop-shadow-md">
+          A timeline of mass violence, policy, and the systematic extraction of foundational wealth from Black Americans.
+        </p>
+        <div class="mt-16 animate-pulse text-zinc-500 font-bold uppercase tracking-widest text-sm flex items-center gap-2">
+          <span>Swipe or Scroll Right</span>
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 8l4 4m0 0l-4 4m4-4H3"></path></svg>
+        </div>
+      </section>
+
+      <!-- HISTORICAL EVENTS INJECTED HERE -->
+
+      <!-- SYSTEMIC VIOLENCE TRANSITION CARD -->
+      <section class="w-screen h-screen flex-shrink-0 flex flex-col justify-center items-center px-6 text-center z-10 bg-zinc-950 relative whitespace-normal border-l-4 border-red-900" data-year="PRESENT" data-ratio="15">
+        <div class="absolute inset-0 opacity-10" style="background-image: radial-gradient(#ef4444 1px, transparent 1px); background-size: 20px 20px;"></div>
+        <h2 class="text-4xl md:text-6xl font-extrabold mb-6 tracking-tight text-red-500 uppercase drop-shadow-2xl z-20">The Era of Systemic Violence</h2>
+        <p class="text-lg md:text-xl text-zinc-300 max-w-3xl drop-shadow-md z-20">
+          Extraction and subjugation did not end with the Civil Rights Act.<br><br>They simply upgraded their methods—moving from the public square into the code, the soil, the boardroom, and the medical chart.
+        </p>
+        <div class="mt-16 animate-pulse text-red-500/50 font-bold uppercase tracking-widest text-sm flex items-center gap-2 z-20">
+          <span>Continue</span>
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 8l4 4m0 0l-4 4m4-4H3"></path></svg>
+        </div>
+      </section>
+
+      <!-- MODERN EVENTS INJECTED HERE -->
+
+      <!-- OUTRO SECTION -->
+      <section class="w-screen h-screen flex-shrink-0 flex flex-col justify-center items-center px-6 text-center z-10 bg-zinc-950 relative whitespace-normal" data-year="PRESENT" data-ratio="15">
+        <h2 class="text-3xl md:text-5xl font-extrabold mb-6 tracking-tight text-white drop-shadow-2xl">The Timeline Continues.</h2>
+        <p class="text-lg md:text-xl text-zinc-400 max-w-2xl drop-shadow-md">
+          161 years after emancipation, the gap remains at 15¢ to the dollar.<br>True history is the first mandatory step toward true repair.
+        </p>
+      </section>
+
     </div>
   </div>
 
@@ -169,7 +186,7 @@
       { year: 2019, ratio: 0.17 }, { year: 2026, ratio: 0.15 }
     ];
 
-    const timelineEvents = [
+    const historicalEvents = [
   {
     "year": 1865,
     "title": "Black Codes Enacted",
@@ -1643,14 +1660,208 @@
     "longDetail": "Despite generations of labor and civil rights struggles, the systemic extraction of wealth via redlining, mass incarceration, and policy remains entirely unrectified."
   }
 ];
+    const modernEvents = [
+  {
+    "year": "PRESENT",
+    "title": "Breast Cancer Tech Bias",
+    "category": "Medical",
+    "location": "Healthcare",
+    "shortSummary": "Computer-Aided Detection (CAD) and AI screening tools trained mostly on white populations frequently miss early indicators of breast cancer in Black women.",
+    "longDetail": "This technological bias directly contributes to a 40% higher mortality rate for Black women with breast cancer, despite them having a lower overall incidence rate compared to white women."
+  },
+  {
+    "year": "PRESENT",
+    "title": "Pulse Oximeter Failures",
+    "category": "Medical",
+    "location": "Healthcare",
+    "shortSummary": "Pulse oximeters, calibrated primarily for white skin, routinely give falsely healthy blood oxygen readings for Black patients.",
+    "longDetail": "During the height of COVID-19, this hardware bias resulted in countless Black patients being denied oxygen therapy and sent home to die."
+  },
+  {
+    "year": "PRESENT",
+    "title": "Kidney Function \"Race Multiplier\"",
+    "category": "Medical",
+    "location": "Healthcare",
+    "shortSummary": "For decades, a kidney function algorithm included a \"race multiplier\" falsely assuming Black people have more muscle mass.",
+    "longDetail": "This pseudoscience artificially elevated their kidney health scores, systematically bumping Black patients down the national kidney transplant list."
+  },
+  {
+    "year": "PRESENT",
+    "title": "Lung Capacity \"Race Switch\"",
+    "category": "Medical",
+    "location": "Healthcare",
+    "shortSummary": "Standard spirometers used to measure lung function have a \"race correction\" button programmed to assume Black lungs have 10-15% less capacity.",
+    "longDetail": "This prevents Black workers from receiving disability payouts for environmental or workplace lung damage because their diminished capacity is considered \"normal.\""
+  },
+  {
+    "year": "PRESENT",
+    "title": "Pain Management Disparities",
+    "category": "Medical",
+    "location": "Healthcare",
+    "shortSummary": "Rooted in 19th-century slavery justifications, widespread bias persists where doctors falsely believe Black patients feel less pain.",
+    "longDetail": "This results in the systemic under-prescribing of pain medication and is a primary driver of the devastating Black maternal mortality crisis."
+  },
+  {
+    "year": "PRESENT",
+    "title": "Dermatology AI Failure",
+    "category": "Medical",
+    "location": "Healthcare",
+    "shortSummary": "Modern skin cancer detection AI is trained almost exclusively on white skin and routinely fails to detect melanomas on darker skin.",
+    "longDetail": "This technological blind spot leads to late-stage, fatal diagnoses for Black patients at drastically higher rates."
+  },
+  {
+    "year": "PRESENT",
+    "title": "Toxic Hair Products (2026)",
+    "category": "Corporate",
+    "location": "Consumer Goods",
+    "shortSummary": "Companies making synthetic braiding hair and relaxers aggressively marketed to Black women knowingly use severe endocrine-disrupting chemicals and lead.",
+    "longDetail": "These unregulated toxins directly drive disproportionate rates of uterine cancer, fibroids, and severe reproductive crises among Black women."
+  },
+  {
+    "year": "PRESENT",
+    "title": "Big Tobacco Menthol Targeting",
+    "category": "Corporate",
+    "location": "Consumer Goods",
+    "shortSummary": "Tobacco companies spent decades aggressively targeting Black neighborhoods with highly addictive menthol cigarettes.",
+    "longDetail": "They handed out free samples from vans and dominated local billboards. Today, 85% of Black smokers use menthols, driving massive health and mortality disparities."
+  },
+  {
+    "year": "PRESENT",
+    "title": "Predatory Payday Lending",
+    "category": "Corporate",
+    "location": "Financial",
+    "shortSummary": "Payday loan storefronts are 2.4 times more concentrated in Black and Latino neighborhoods than white ones, even adjusting for income.",
+    "longDetail": "They are explicitly designed to trap minority families in continuous debt cycles, legally charging upward of 400% interest rates."
+  },
+  {
+    "year": "PRESENT",
+    "title": "Appraisal Whitewashing",
+    "category": "Corporate",
+    "location": "Real Estate",
+    "shortSummary": "Black homeowners routinely receive home appraisals tens to hundreds of thousands of dollars lower than their home's actual value.",
+    "longDetail": "In numerous documented cases, appraisals skyrocketed only after Black owners removed family photos and had white friends stand in for them."
+  },
+  {
+    "year": "PRESENT",
+    "title": "Digital Mortgage Redlining",
+    "category": "Corporate",
+    "location": "Financial",
+    "shortSummary": "Algorithmic, \"faceless\" mortgage lenders deny Black and Latino applicants at 40% to 80% higher rates than white applicants.",
+    "longDetail": "This occurs even when the minority applicants have the exact same financial profiles, incomes, and credit scores as their white counterparts."
+  },
+  {
+    "year": "PRESENT",
+    "title": "Auto Insurance Zip-Code Penalties",
+    "category": "Corporate",
+    "location": "Financial",
+    "shortSummary": "Major auto insurers use algorithms that charge Black drivers in minority neighborhoods up to 30% more for car insurance.",
+    "longDetail": "This price gouging happens even when compared to white drivers with identical driving records living in predominantly white neighborhoods."
+  },
+  {
+    "year": "PRESENT",
+    "title": "Facial Recognition False Arrests",
+    "category": "Tech",
+    "location": "Law Enforcement",
+    "shortSummary": "Police departments nationwide use flawed facial recognition tech that routinely \"hallucinates\" matches for Black faces.",
+    "longDetail": "Multiple innocent Black men, and even pregnant women, have been falsely arrested at their homes or workplaces based entirely on bad algorithm matching."
+  },
+  {
+    "year": "PRESENT",
+    "title": "Predictive Policing Algorithms",
+    "category": "Tech",
+    "location": "Law Enforcement",
+    "shortSummary": "AI software used by police is trained on historically racist arrest records, predictably sending militarized police back into Black neighborhoods.",
+    "longDetail": "This creates a self-justifying feedback loop of hyper-surveillance, where algorithms mandate over-policing because of past over-policing."
+  },
+  {
+    "year": "PRESENT",
+    "title": "Risk Assessment Sentencing",
+    "category": "Tech",
+    "location": "Justice System",
+    "shortSummary": "Algorithms used by judges to predict recidivism falsely flag Black defendants as \"high risk\" at twice the rate of white defendants.",
+    "longDetail": "This directly results in harsher, longer prison sentences for Black citizens committing the exact same crimes as white citizens."
+  },
+  {
+    "year": "PRESENT",
+    "title": "Autonomous Vehicle Blind Spots",
+    "category": "Tech",
+    "location": "Infrastructure",
+    "shortSummary": "Studies show that pedestrian detection systems in self-driving cars are up to 20% less accurate at detecting people with darker skin.",
+    "longDetail": "As this technology scales onto city streets, it puts Black pedestrians at a disproportionate, algorithmically engineered physical risk."
+  },
+  {
+    "year": "PRESENT",
+    "title": "Automated Hiring Discrimination",
+    "category": "Tech",
+    "location": "Corporate",
+    "shortSummary": "AI resume-screening software used by Fortune 500 companies routinely downgrades candidates who attended HBCUs or have \"Black-sounding\" names.",
+    "longDetail": "This modernizes historical employment discrimination, locking Black professionals out of economic mobility using hidden code."
+  },
+  {
+    "year": "PRESENT",
+    "title": "The Optum Healthcare Algorithm",
+    "category": "Tech",
+    "location": "Healthcare",
+    "shortSummary": "An AI used by hospitals prioritized healthier white patients over significantly sicker Black patients for extra medical care.",
+    "longDetail": "The algorithm was flawed because it equated \"healthcare need\" with \"past healthcare spending,\" effectively punishing Black patients for historical lack of access."
+  },
+  {
+    "year": "PRESENT",
+    "title": "Cancer Alley",
+    "category": "Enviro",
+    "location": "Louisiana",
+    "shortSummary": "An 85-mile stretch where the EPA allowed the extreme clustering of over 200 petrochemical plants directly inside predominantly Black communities.",
+    "longDetail": "The cancer risk for the Black residents living in this unregulated industrial sacrifice zone is up to 50 times the national average."
+  },
+  {
+    "year": "PRESENT",
+    "title": "Food Apartheid",
+    "category": "Enviro",
+    "location": "Nationwide",
+    "shortSummary": "The deliberate, systemic abandonment of Black neighborhoods by grocery chains, leaving them with only predatory dollar stores and fast food.",
+    "longDetail": "This engineered nutritional deficit drives massive disparities in diabetes and heart disease, effectively functioning as slow violence."
+  },
+  {
+    "year": "PRESENT",
+    "title": "Urban Heat Islands",
+    "category": "Enviro",
+    "location": "Nationwide",
+    "shortSummary": "Because of historical redlining, Black neighborhoods consistently lack tree canopies and have significantly more heat-absorbing asphalt.",
+    "longDetail": "These neighborhoods run up to 15 degrees hotter than white areas in the same city, driving up utility costs and heat-related deaths."
+  },
+  {
+    "year": "PRESENT",
+    "title": "Highway Routing and Asthma",
+    "category": "Enviro",
+    "location": "Nationwide",
+    "shortSummary": "The legacy of routing massive interstate highways directly through thriving Black neighborhoods continues to poison the air today.",
+    "longDetail": "Black children are exposed to drastically higher levels of vehicle emissions, leading to asthma rates that dwarf those in white communities."
+  },
+  {
+    "year": "PRESENT",
+    "title": "The Jackson Water Crisis",
+    "category": "Enviro",
+    "location": "Mississippi",
+    "shortSummary": "The total collapse of municipal water infrastructure in Mississippi's capital, directly caused by intentional state-level defunding.",
+    "longDetail": "Similar to Flint, MI, white flight and political abandonment left Black residents to drink and bathe in lead-poisoned water for years."
+  }
+];
 
     const track = document.getElementById('timeline-track');
-    const wrapper = document.getElementById('scroll-wrapper');
+    const transitionCard = document.querySelector('[data-year="PRESENT"]'); 
 
+    // 1. GENERATE HISTORICAL EVENTS (1865 - 2026)
     let currentYear = 1865;
+    let historicalHTML = '';
 
     while(currentYear <= 2026) {
-      const eventsThisYear = timelineEvents.filter(e => e.year === currentYear);
+      const eventsThisYear = historicalEvents.filter(e => e.year === currentYear);
+
+      // Calculate ratio data attribute for header syncing
+      const dataPoint = wealthTimeline.reduce((prev, curr) => {
+        return (Math.abs(curr.year - currentYear) < Math.abs(prev.year - currentYear) ? curr : prev);
+      });
+      const ratioCents = Math.round(dataPoint.ratio * 100);
 
       if (eventsThisYear.length > 0) {
         eventsThisYear.forEach(event => {
@@ -1674,8 +1885,8 @@
               </div>`;
           }
 
-          const cardHTML = `
-            <div class="event-card border-t-4 ${borderColor} p-6" data-year="${event.year}">
+          historicalHTML += `
+            <div class="event-card border-t-4 ${borderColor} p-6" data-year="${event.year}" data-ratio="${ratioCents}">
               <div class="flex justify-between items-baseline mb-2">
                 <span class="text-3xl font-black text-white drop-shadow-lg">${event.year}</span>
                 <span class="text-xs font-bold uppercase tracking-wider text-zinc-500">${event.category} • ${event.location}</span>
@@ -1696,50 +1907,93 @@
               </div>
             </div>
           `;
-          track.insertAdjacentHTML('beforeend', cardHTML);
         });
       } else {
-        track.insertAdjacentHTML('beforeend', `
-          <div class="w-16 flex-shrink-0 flex flex-col items-center justify-center opacity-40 z-0" data-year="${currentYear}">
+        historicalHTML += `
+          <div class="w-16 flex-shrink-0 flex flex-col items-center justify-center opacity-40 z-0" data-year="${currentYear}" data-ratio="${ratioCents}">
             <div class="w-3 h-3 rounded-full bg-zinc-800 border border-zinc-600 empty-node"></div>
             <span class="text-[10px] text-zinc-600 font-bold mt-2">${currentYear}</span>
           </div>
-        `);
+        `;
       }
 
+      // Dot walls
       if (currentYear === 1877) {
-        track.insertAdjacentHTML('beforeend', `
-          <div class="event-card border-t-4 border-red-600 p-6 flex flex-col justify-center" data-year="1877">
+        historicalHTML += `
+          <div class="event-card border-t-4 border-red-600 p-6 flex flex-col justify-center" data-year="1877" data-ratio="${ratioCents}">
             <h2 class="text-3xl font-black text-red-500 uppercase tracking-widest mb-2 whitespace-normal">Reconstruction Terror</h2>
             <p class="text-zinc-300 text-lg mb-4 whitespace-normal">You are about to pass <strong class="text-white">2,000+ dots</strong>.</p>
-            <p class="text-zinc-400 text-sm leading-relaxed whitespace-normal">Each dot represents a documented person killed in racial terror during this era. This wall visualizes the scale of coordinated violence used to overthrow multiracial democracy in the South.</p>
+            <p class="text-zinc-400 text-sm leading-relaxed whitespace-normal">Each dot represents a documented person killed in racial terror during this era. This visualizes the scale of coordinated violence used to overthrow multiracial democracy.</p>
           </div>
-          <div class="dot-wall-container" data-year="1877">
+          <div class="dot-wall-container" data-year="1877" data-ratio="${ratioCents}">
             <div class="bg-zinc-950/80 border-y border-red-900/50 shadow-2xl p-4">
               <canvas id="canvas-1877" style="display:block;"></canvas>
             </div>
           </div>
-        `);
+        `;
       }
 
       if (currentYear === 1950) {
-        track.insertAdjacentHTML('beforeend', `
-          <div class="event-card border-t-4 border-red-600 p-6 flex flex-col justify-center" data-year="1950">
+        historicalHTML += `
+          <div class="event-card border-t-4 border-red-600 p-6 flex flex-col justify-center" data-year="1950" data-ratio="${ratioCents}">
             <h2 class="text-3xl font-black text-red-500 uppercase tracking-widest mb-2 whitespace-normal">Jim Crow Lynchings</h2>
             <p class="text-zinc-300 text-lg mb-4 whitespace-normal">You are about to pass <strong class="text-white">4,400+ dots</strong>.</p>
-            <p class="text-zinc-400 text-sm leading-relaxed whitespace-normal">Each dot represents a documented victim of lynching during the Jim Crow era. Countless others went unrecorded. These public executions were used to enforce total economic and political subjugation.</p>
+            <p class="text-zinc-400 text-sm leading-relaxed whitespace-normal">Each dot represents a documented victim of lynching during the Jim Crow era. These public executions enforced total economic and political subjugation.</p>
           </div>
-          <div class="dot-wall-container" data-year="1950">
+          <div class="dot-wall-container" data-year="1950" data-ratio="${ratioCents}">
             <div class="bg-zinc-950/80 border-y border-red-900/50 shadow-2xl p-4">
               <canvas id="canvas-1950" style="display:block;"></canvas>
             </div>
           </div>
-        `);
+        `;
       }
 
       currentYear++;
     }
 
+    transitionCard.insertAdjacentHTML('beforebegin', historicalHTML);
+
+    // 2. GENERATE MODERN "PRESENT" EVENTS
+    let modernHTML = '';
+    let staggerCount = 1;
+
+    modernEvents.forEach(event => {
+      let borderColor = 'border-zinc-700';
+      let titleColor = 'text-white';
+
+      if (event.category === 'Medical') { borderColor = 'border-emerald-500'; titleColor = 'text-emerald-400'; }
+      if (event.category === 'Corporate') { borderColor = 'border-blue-500'; titleColor = 'text-blue-400'; }
+      if (event.category === 'Tech') { borderColor = 'border-purple-500'; titleColor = 'text-purple-400'; }
+      if (event.category === 'Enviro') { borderColor = 'border-yellow-500'; titleColor = 'text-yellow-400'; }
+
+      const staggerClass = 'stagger-' + staggerCount;
+      staggerCount = staggerCount >= 4 ? 1 : staggerCount + 1;
+
+      modernHTML += `
+        <div class="event-card border-t-4 ${borderColor} p-6 ${staggerClass}" data-year="PRESENT" data-ratio="15">
+          <div class="flex justify-between items-baseline mb-3 border-b border-zinc-800 pb-2">
+            <span class="text-2xl font-black text-white drop-shadow-lg tracking-widest">PRESENT</span>
+            <span class="text-xs font-bold uppercase tracking-wider text-zinc-500">${event.category} • ${event.location}</span>
+          </div>
+
+          <h2 class="text-xl md:text-2xl font-bold mb-3 ${titleColor} whitespace-normal">${event.title}</h2>
+          <p class="text-zinc-300 text-base leading-relaxed mb-4 whitespace-normal">${event.shortSummary}</p>
+
+          <button class="read-more-btn text-zinc-500 font-bold text-sm uppercase tracking-widest flex items-center hover:text-white py-2 cursor-pointer transition-colors">
+            <span>Read More</span>
+            <svg class="w-4 h-4 ml-1 transform transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
+          </button>
+
+          <div class="expandable-content pt-4 mt-2 border-t border-zinc-800 whitespace-normal">
+            <p class="text-zinc-400 text-sm leading-relaxed">${event.longDetail}</p>
+          </div>
+        </div>
+      `;
+    });
+
+    transitionCard.insertAdjacentHTML('afterend', modernHTML);
+
+    // 3. DRAW DOT WALLS
     function drawDotWall(canvasId, count, rows=6, dotRadius=3, gap=6) {
       const canvas = document.getElementById(canvasId);
       if (!canvas) return;
@@ -1765,11 +2019,10 @@
         ctx.fill();
       }
     }
-
     drawDotWall("canvas-1877", 2000);
     drawDotWall("canvas-1950", 4400);
 
-    // Dropdown expansion logic
+    // 4. DROPDOWN LOGIC
     document.querySelectorAll('.read-more-btn').forEach(btn => {
       btn.addEventListener('click', (e) => {
         const content = e.currentTarget.nextElementSibling;
@@ -1780,30 +2033,54 @@
       });
     });
 
-    // Update top bar naturally as the user scrolls horizontally
+    // 5. UPDATE HEADER BASED ON SCROLL POSITION (Center of Screen)
+    const wrapper = document.getElementById('scroll-wrapper');
+    const yearDisplay = document.getElementById('current-year-display');
+    const ratioDisplay = document.getElementById('current-ratio');
+    const wealthBar = document.getElementById('black-wealth-bar');
+    let isScrolling = false;
+
     wrapper.addEventListener('scroll', () => {
-      const maxScroll = wrapper.scrollWidth - wrapper.clientWidth;
-      let progress = wrapper.scrollLeft / maxScroll;
+      if (!isScrolling) {
+        window.requestAnimationFrame(() => {
+          const viewportCenter = window.innerWidth / 2;
+          let closestElement = null;
+          let minDistance = Infinity;
 
-      if(progress < 0) progress = 0;
-      if(progress > 1) progress = 1;
+          // Find which data-year element is closest to the center of the screen
+          document.querySelectorAll('[data-year]').forEach(el => {
+            const rect = el.getBoundingClientRect();
+            const elCenter = rect.left + (rect.width / 2);
+            const distance = Math.abs(elCenter - viewportCenter);
 
-      let calcYear = Math.round(1865 + (progress * (2026 - 1865)));
+            if (distance < minDistance) {
+              minDistance = distance;
+              closestElement = el;
+            }
+          });
 
-      if(calcYear < 1860) calcYear = 1860;
-      if(calcYear > 2026) calcYear = 2026;
+          if (closestElement) {
+            const yearStr = closestElement.getAttribute('data-year');
+            const ratioVal = closestElement.getAttribute('data-ratio');
 
-      const dataPoint = wealthTimeline.reduce((prev, curr) => {
-        return (Math.abs(curr.year - calcYear) < Math.abs(prev.year - calcYear) ? curr : prev);
-      });
+            if(yearStr === "PRESENT") {
+               yearDisplay.innerText = "PRESENT";
+               yearDisplay.classList.add("text-red-500");
+            } else {
+               yearDisplay.innerText = yearStr;
+               yearDisplay.classList.remove("text-red-500");
+            }
 
-      const ratioCents = Math.round(dataPoint.ratio * 100);
-      document.getElementById('black-wealth-bar').style.width = `${ratioCents}%`;
-      document.getElementById('current-year-display').innerText = calcYear;
-      document.getElementById('current-ratio').innerText = `${ratioCents}¢ per $1`;
+            ratioDisplay.innerText = `${ratioVal}¢ per $1`;
+            wealthBar.style.width = `${ratioVal}%`;
+          }
+          isScrolling = false;
+        });
+        isScrolling = true;
+      }
     });
 
-    // Convert mouse vertical mousewheel scrolling to horizontal scrolling (so standard mice don't get stuck)
+    // Convert mouse vertical scroll wheel to horizontal scrolling
     wrapper.addEventListener("wheel", (e) => {
         if (e.deltaY !== 0) {
             e.preventDefault();
