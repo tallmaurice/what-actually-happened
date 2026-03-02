@@ -5,16 +5,16 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>What Actually Happened.</title>
   <script src="https://cdn.tailwindcss.com"></script>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/ScrollTrigger.min.js"></script>
   <style>
     body { 
         background-color: #09090b; 
         color: white; 
         font-family: sans-serif; 
-        overflow-x: hidden; 
         margin: 0; 
         padding: 0; 
+        /* Lock vertical scrolling completely */
+        overflow-y: hidden;
+        overflow-x: hidden; /* We manage horizontal scrolling via an inner container */
     }
 
     .noise-overlay {
@@ -29,24 +29,37 @@
         background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)'/%3E%3C/svg%3E");
     }
 
+    /* Native Horizontal Scrolling Container */
     .horizontal-scroll-wrapper {
       width: 100vw;
       height: 100vh;
-      overflow: hidden;
+      overflow-x: auto; 
+      overflow-y: hidden;
+      white-space: nowrap; 
       position: relative;
+      scroll-behavior: smooth;
+      -webkit-overflow-scrolling: touch; /* Momentum scrolling on iOS */
+    }
+
+    /* Hide the scrollbar itself for a cleaner look but keep functionality */
+    .horizontal-scroll-wrapper::-webkit-scrollbar {
+      display: none;
+    }
+    .horizontal-scroll-wrapper {
+      -ms-overflow-style: none;  /* IE and Edge */
+      scrollbar-width: none;  /* Firefox */
     }
 
     .timeline-track {
-      display: flex;
+      display: inline-flex;
       flex-direction: row;
       align-items: center;
       height: 100%;
-      width: max-content;
-      padding: 0 50vw; 
+      padding: 0 50vw; /* Starts in middle, ends in middle */
       position: relative;
-      will-change: transform; /* Mobile Performance fix */
     }
 
+    /* Pulsing Timeline Line */
     .time-axis {
       position: absolute;
       top: 50%;
@@ -64,7 +77,6 @@
         100% { box-shadow: 0 0 20px rgba(239, 68, 68, 0.9), 0 0 10px rgba(239, 68, 68, 0.7); background: #71717a; opacity: 1; }
     }
 
-    /* UPDATED EVENT CARD: Depth without disorienting 3D Tilt */
     .event-card {
       width: 85vw;
       max-width: 420px;
@@ -77,6 +89,7 @@
       transition: transform 0.4s ease, box-shadow 0.4s ease, filter 0.4s ease;
       box-shadow: 0 10px 25px rgba(0,0,0,.55), inset 0 0 0 1px rgba(255,255,255,.06);
       z-index: 10;
+      white-space: normal; /* Override the wrapper's nowrap so text flows */
     }
 
     .event-card:hover {
@@ -100,6 +113,7 @@
       margin-right: 4rem;
       position: relative;
       z-index: 10;
+      white-space: normal;
     }
 
     .expandable-content {
@@ -129,19 +143,20 @@
     </div>
   </header>
 
-  <section class="h-screen w-full flex flex-col justify-center items-center px-6 text-center relative z-10 bg-zinc-950">
-    <h1 class="text-5xl md:text-7xl font-extrabold mb-6 tracking-tight text-white relative z-20">What Actually Happened.</h1>
-    <p class="text-lg md:text-xl text-zinc-400 max-w-2xl relative z-20">
+  <!-- Introductory Text -->
+  <section class="absolute left-0 h-screen w-screen flex flex-col justify-center items-center px-6 text-center z-10 pointer-events-none">
+    <h1 class="text-5xl md:text-7xl font-extrabold mb-6 tracking-tight text-white drop-shadow-2xl">What Actually Happened.</h1>
+    <p class="text-lg md:text-xl text-zinc-400 max-w-2xl drop-shadow-md">
       A timeline of mass violence, policy, and the systematic extraction of foundational wealth from Black Americans.
     </p>
-    <div class="mt-16 animate-bounce text-zinc-500 font-bold uppercase tracking-widest text-sm relative z-20">
-      Scroll Down to Move Forward in Time
+    <div class="mt-16 animate-pulse text-zinc-500 font-bold uppercase tracking-widest text-sm drop-shadow-md">
+      Swipe or Scroll Right ➔
     </div>
   </section>
 
   <div class="horizontal-scroll-wrapper" id="scroll-wrapper">
-    <div class="time-axis"></div>
     <div class="timeline-track" id="timeline-track">
+      <div class="time-axis"></div>
       <!-- Injected by JS -->
     </div>
   </div>
@@ -172,7 +187,7 @@
     "longDetail": "These massacres were deliberate attempts to crush Black political enfranchisement and economic independence right after the Civil War.",
     "deaths": "80+",
     "impact": "Dozens of Black-owned businesses and schools burned.",
-    "imageFile": "Memphis_Riot_1866.jpg"
+    "image": "memphis.jpg"
   },
   {
     "year": 1867,
@@ -453,7 +468,7 @@
     "longDetail": "The violence explicitly targeted and destroyed one of the wealthiest Black communities and business districts in the American South.",
     "deaths": "60-300",
     "impact": "Total loss of Black municipal power and generational wealth.",
-    "imageFile": "Wilmington_Race_Riot_1.jpg"
+    "image": "wilmington.jpg"
   },
   {
     "year": 1899,
@@ -613,7 +628,7 @@
     "longDetail": "Photographs of his charred body were sold as postcards, representing the absolute nadir of American racial sadism.",
     "deaths": "1",
     "names": "Jesse Washington",
-    "imageFile": "Jesse_Washington_lynching.jpg"
+    "image": "waco.jpg"
   },
   {
     "year": 1917,
@@ -663,7 +678,7 @@
     "longDetail": "The violence wiped out an estimated $200 million in generational wealth (2026 dollars) in 18 hours. No reparations have ever been paid.",
     "deaths": "100-300",
     "impact": "$200+ Million in generational wealth destroyed.",
-    "imageFile": "Tulsa_race_riot_damage.jpg"
+    "image": "tulsa.jpg"
   },
   {
     "year": 1922,
@@ -743,7 +758,7 @@
     "longDetail": "The photograph of the lynching crowd became one of the most famous images of racial terror, inspiring the song 'Strange Fruit'.",
     "deaths": "2",
     "names": "Thomas Shipp, Abram Smith",
-    "imageFile": "Lynchings_of_Thomas_Shipp_and_Abram_Smith.jpg"
+    "image": "marion.jpg"
   },
   {
     "year": 1931,
@@ -777,7 +792,7 @@
     "location": "Nationwide",
     "shortSummary": "The Federal Housing Administration color-coded Black neighborhoods red, refusing to insure mortgages in those areas.",
     "longDetail": "This guaranteed Black families could not build home equity or access credit, while white families accumulated vast generational wealth.",
-    "imageFile": "HOLC_Philadelphia.jpg"
+    "image": "redlining.jpg"
   },
   {
     "year": 1935,
@@ -967,8 +982,7 @@
     "longDetail": "The open-casket funeral exposed the absolute barbarity of white supremacy to the world. His killers were acquitted.",
     "deaths": "1",
     "names": "Emmett Till",
-    "imageFile": "Emmett_Till.jpg",
-    "imageDomain": "en"
+    "image": "emmett-till.jpg"
   },
   {
     "year": 1956,
@@ -1020,7 +1034,7 @@
     "location": "Anniston, AL",
     "shortSummary": "A KKK mob firebombed a bus of civil rights workers and held the doors shut to burn them alive.",
     "longDetail": "When the riders escaped the inferno, the mob beat them with iron pipes. Local police conspired with the Klan.",
-    "imageFile": "Freedom_Riders_bus_destroyed_by_firebomb.jpg"
+    "image": "freedom-riders.jpg"
   },
   {
     "year": 1962,
@@ -1577,7 +1591,7 @@
     "longDetail": "Simultaneously, COVID-19 disproportionately killed Black Americans and decimated Black-owned businesses due to systemic health and financial inequities.",
     "deaths": "1",
     "names": "George Floyd",
-    "imageFile": "George_Floyd_mural_in_Minneapolis_02.jpg"
+    "image": "george-floyd.jpg"
   },
   {
     "year": 2021,
@@ -1630,13 +1644,8 @@
   }
 ];
 
-    // Helper to generate a reliable Wikimedia image redirect URL
-    function buildImgSrc(fileName, domain="commons") {
-      const safeName = encodeURIComponent(fileName.replace(/ /g, '_'));
-      return `https://${domain}.wikimedia.org/w/index.php?title=Special:Redirect/file/${safeName}&width=800`;
-    }
-
     const track = document.getElementById('timeline-track');
+    const wrapper = document.getElementById('scroll-wrapper');
 
     let currentYear = 1865;
 
@@ -1658,14 +1667,10 @@
           if (event.names) namesInfo = `<p class="text-xs text-zinc-400 mb-3 border-l-2 border-zinc-700 pl-3"><strong>Victims/Targets:</strong> ${event.names}</p>`;
 
           let imageInfo = '';
-          if (event.imageFile) {
-            const domain = event.imageDomain || "commons";
-            const imgSrc = buildImgSrc(event.imageFile, domain);
-            const fallbackLink = `https://${domain}.wikimedia.org/wiki/File:${encodeURIComponent(event.imageFile)}`;
-            // If image fails, hide it and show a link instead
+          if (event.image) {
             imageInfo = `
               <div class="relative w-full h-48 mb-4 overflow-hidden rounded border border-zinc-700 bg-zinc-900 flex items-center justify-center">
-                <img src="${imgSrc}" loading="lazy" decoding="async" class="absolute inset-0 w-full h-full object-cover grayscale hover:grayscale-0 hover:scale-105 transition-all duration-700" alt="Historical photo" onerror="this.style.display='none'; this.parentElement.innerHTML='<a class=&quot;text-amber-500 text-xs underline&quot; target=&quot;_blank&quot; href=&quot;${fallbackLink}&quot;>View Archival Photo</a>';">
+                <img src="${event.image}" loading="lazy" decoding="async" class="absolute inset-0 w-full h-full object-cover grayscale hover:grayscale-0 hover:scale-105 transition-all duration-700" alt="${event.title}" onerror="this.style.display='none';">
               </div>`;
           }
 
@@ -1676,16 +1681,16 @@
                 <span class="text-xs font-bold uppercase tracking-wider text-zinc-500">${event.category} • ${event.location}</span>
               </div>
               ${imageInfo}
-              <h2 class="text-xl md:text-2xl font-bold mb-3 text-white">${event.title}</h2>
+              <h2 class="text-xl md:text-2xl font-bold mb-3 text-white whitespace-normal">${event.title}</h2>
               <div class="mb-3">${tags}</div>
-              <p class="text-zinc-300 text-base leading-relaxed mb-4">${event.shortSummary}</p>
+              <p class="text-zinc-300 text-base leading-relaxed mb-4 whitespace-normal">${event.shortSummary}</p>
 
               <button class="read-more-btn text-amber-500 font-bold text-sm uppercase tracking-widest flex items-center hover:text-amber-400 py-2 cursor-pointer transition-colors">
                 <span>Read More</span>
                 <svg class="w-4 h-4 ml-1 transform transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
               </button>
 
-              <div class="expandable-content pt-4 mt-2 border-t border-zinc-800">
+              <div class="expandable-content pt-4 mt-2 border-t border-zinc-800 whitespace-normal">
                 ${namesInfo}
                 <p class="text-zinc-400 text-sm leading-relaxed">${event.longDetail}</p>
               </div>
@@ -1702,13 +1707,12 @@
         `);
       }
 
-      // 1877 DOT WALL WITH PRE-CARD (Canvas Fix)
       if (currentYear === 1877) {
         track.insertAdjacentHTML('beforeend', `
           <div class="event-card border-t-4 border-red-600 p-6 flex flex-col justify-center" data-year="1877">
-            <h2 class="text-3xl font-black text-red-500 uppercase tracking-widest mb-2">Reconstruction Terror</h2>
-            <p class="text-zinc-300 text-lg mb-4">You are about to pass <strong class="text-white">2,000+ dots</strong>.</p>
-            <p class="text-zinc-400 text-sm leading-relaxed">Each dot represents a documented person killed in racial terror during this era. This wall visualizes the scale of coordinated violence used to overthrow multiracial democracy in the South.</p>
+            <h2 class="text-3xl font-black text-red-500 uppercase tracking-widest mb-2 whitespace-normal">Reconstruction Terror</h2>
+            <p class="text-zinc-300 text-lg mb-4 whitespace-normal">You are about to pass <strong class="text-white">2,000+ dots</strong>.</p>
+            <p class="text-zinc-400 text-sm leading-relaxed whitespace-normal">Each dot represents a documented person killed in racial terror during this era. This wall visualizes the scale of coordinated violence used to overthrow multiracial democracy in the South.</p>
           </div>
           <div class="dot-wall-container" data-year="1877">
             <div class="bg-zinc-950/80 border-y border-red-900/50 shadow-2xl p-4">
@@ -1718,13 +1722,12 @@
         `);
       }
 
-      // 1950 DOT WALL WITH PRE-CARD (Canvas Fix)
       if (currentYear === 1950) {
         track.insertAdjacentHTML('beforeend', `
           <div class="event-card border-t-4 border-red-600 p-6 flex flex-col justify-center" data-year="1950">
-            <h2 class="text-3xl font-black text-red-500 uppercase tracking-widest mb-2">Jim Crow Lynchings</h2>
-            <p class="text-zinc-300 text-lg mb-4">You are about to pass <strong class="text-white">4,400+ dots</strong>.</p>
-            <p class="text-zinc-400 text-sm leading-relaxed">Each dot represents a documented victim of lynching during the Jim Crow era. Countless others went unrecorded. These public executions were used to enforce total economic and political subjugation.</p>
+            <h2 class="text-3xl font-black text-red-500 uppercase tracking-widest mb-2 whitespace-normal">Jim Crow Lynchings</h2>
+            <p class="text-zinc-300 text-lg mb-4 whitespace-normal">You are about to pass <strong class="text-white">4,400+ dots</strong>.</p>
+            <p class="text-zinc-400 text-sm leading-relaxed whitespace-normal">Each dot represents a documented victim of lynching during the Jim Crow era. Countless others went unrecorded. These public executions were used to enforce total economic and political subjugation.</p>
           </div>
           <div class="dot-wall-container" data-year="1950">
             <div class="bg-zinc-950/80 border-y border-red-900/50 shadow-2xl p-4">
@@ -1737,7 +1740,6 @@
       currentYear++;
     }
 
-    // Helper function to draw dots on a canvas instead of thousands of DOM elements
     function drawDotWall(canvasId, count, rows=6, dotRadius=3, gap=6) {
       const canvas = document.getElementById(canvasId);
       if (!canvas) return;
@@ -1750,7 +1752,7 @@
       canvas.height = height;
 
       const ctx = canvas.getContext('2d');
-      ctx.fillStyle = "rgba(220, 38, 38, 0.8)"; // Red dot color
+      ctx.fillStyle = "rgba(220, 38, 38, 0.8)";
 
       for(let i=0; i<count; i++) {
         const row = i % rows;
@@ -1764,11 +1766,10 @@
       }
     }
 
-    // Draw the canvases
     drawDotWall("canvas-1877", 2000);
     drawDotWall("canvas-1950", 4400);
 
-    // Expandable cards logic
+    // Dropdown expansion logic
     document.querySelectorAll('.read-more-btn').forEach(btn => {
       btn.addEventListener('click', (e) => {
         const content = e.currentTarget.nextElementSibling;
@@ -1776,51 +1777,40 @@
         content.classList.toggle('expanded');
         icon.classList.toggle('rotate-180');
         e.currentTarget.querySelector('span').innerText = content.classList.contains('expanded') ? 'Show Less' : 'Read More';
-        setTimeout(() => ScrollTrigger.refresh(), 400); 
       });
     });
 
-    // GSAP ScrollTrigger configuration
-    gsap.registerPlugin(ScrollTrigger);
+    // Update top bar naturally as the user scrolls horizontally
+    wrapper.addEventListener('scroll', () => {
+      const maxScroll = wrapper.scrollWidth - wrapper.clientWidth;
+      let progress = wrapper.scrollLeft / maxScroll;
 
-    // High-performance mobile configuration
-    ScrollTrigger.config({
-      ignoreMobileResize: true // Prevents layout thrashing on mobile scroll bar hide/show
+      if(progress < 0) progress = 0;
+      if(progress > 1) progress = 1;
+
+      let calcYear = Math.round(1865 + (progress * (2026 - 1865)));
+
+      if(calcYear < 1860) calcYear = 1860;
+      if(calcYear > 2026) calcYear = 2026;
+
+      const dataPoint = wealthTimeline.reduce((prev, curr) => {
+        return (Math.abs(curr.year - calcYear) < Math.abs(prev.year - calcYear) ? curr : prev);
+      });
+
+      const ratioCents = Math.round(dataPoint.ratio * 100);
+      document.getElementById('black-wealth-bar').style.width = `${ratioCents}%`;
+      document.getElementById('current-year-display').innerText = calcYear;
+      document.getElementById('current-ratio').innerText = `${ratioCents}¢ per $1`;
     });
 
-    function initScroll() {
-      let trackWidth = track.scrollWidth - window.innerWidth;
-
-      let scrollTween = gsap.to(track, {
-        x: -trackWidth,
-        ease: "none",
-        scrollTrigger: {
-          trigger: ".horizontal-scroll-wrapper",
-          pin: true,
-          scrub: 1, 
-          end: () => "+=" + trackWidth,
-
-          onUpdate: (self) => {
-            let progress = self.progress; 
-            let calcYear = Math.round(1865 + (progress * (2026 - 1865)));
-
-            if(calcYear < 1860) calcYear = 1860;
-            if(calcYear > 2026) calcYear = 2026;
-
-            const dataPoint = wealthTimeline.reduce((prev, curr) => {
-              return (Math.abs(curr.year - calcYear) < Math.abs(prev.year - calcYear) ? curr : prev);
-            });
-
-            const ratioCents = Math.round(dataPoint.ratio * 100);
-            document.getElementById('black-wealth-bar').style.width = `${ratioCents}%`;
-            document.getElementById('current-year-display').innerText = calcYear;
-            document.getElementById('current-ratio').innerText = `${ratioCents}¢ per $1`;
-          }
+    // Convert mouse vertical mousewheel scrolling to horizontal scrolling (so standard mice don't get stuck)
+    wrapper.addEventListener("wheel", (e) => {
+        if (e.deltaY !== 0) {
+            e.preventDefault();
+            wrapper.scrollLeft += e.deltaY;
         }
-      });
-    }
+    });
 
-    window.addEventListener('load', initScroll);
   </script>
 </body>
 </html>
