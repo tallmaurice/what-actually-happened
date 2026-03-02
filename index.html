@@ -7,7 +7,8 @@
   <script src="https://cdn.tailwindcss.com"></script>
   <style>
     body { 
-        background-color: #09090b; 
+        background-color: #09090b;
+        background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.8' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)' opacity='0.08'/%3E%3C/svg%3E");
         color: white; 
         font-family: sans-serif; 
         margin: 0; 
@@ -138,11 +139,11 @@
     <div class="timeline-track" id="timeline-track">
       <div class="time-axis"></div>
 
-      <!-- INTRO SECTION (Takes up first screen) -->
-      <section class="w-screen h-screen flex-shrink-0 flex flex-col justify-center items-center px-6 text-center z-10 bg-zinc-950 relative whitespace-normal" data-year="1865" data-ratio="2">
+      <!-- INTRO SECTION -->
+      <section class="w-screen h-screen flex-shrink-0 flex flex-col justify-center items-center px-6 text-center z-10 bg-transparent relative whitespace-normal" data-year="1865" data-ratio="2">
         <h1 class="text-5xl md:text-7xl font-extrabold mb-6 tracking-tight text-white drop-shadow-2xl">What Actually Happened.</h1>
         <p class="text-lg md:text-xl text-zinc-400 max-w-2xl drop-shadow-md">
-          A timeline of mass violence, policy, and the systematic extraction of foundational wealth from Black Americans AFTER enslavement.
+          A timeline of mass violence, policy, and the systematic extraction of foundational wealth from Black Americans.
         </p>
         <div class="mt-16 animate-pulse text-zinc-500 font-bold uppercase tracking-widest text-sm flex items-center gap-2">
           <span>Swipe or Scroll Right</span>
@@ -153,7 +154,7 @@
       <!-- HISTORICAL EVENTS INJECTED HERE -->
 
       <!-- SYSTEMIC VIOLENCE TRANSITION CARD -->
-      <section class="w-screen h-screen flex-shrink-0 flex flex-col justify-center items-center px-6 text-center z-10 bg-zinc-950 relative whitespace-normal border-l-4 border-red-900" data-year="PRESENT" data-ratio="15">
+      <section class="w-screen h-screen flex-shrink-0 flex flex-col justify-center items-center px-6 text-center z-10 bg-transparent relative whitespace-normal border-l-4 border-red-900" data-year="PRESENT" data-ratio="15">
         <div class="absolute inset-0 opacity-10" style="background-image: radial-gradient(#ef4444 1px, transparent 1px); background-size: 20px 20px;"></div>
         <h2 class="text-4xl md:text-6xl font-extrabold mb-6 tracking-tight text-red-500 uppercase drop-shadow-2xl z-20">The Era of Systemic Violence</h2>
         <p class="text-lg md:text-xl text-zinc-300 max-w-3xl drop-shadow-md z-20">
@@ -168,7 +169,7 @@
       <!-- MODERN EVENTS INJECTED HERE -->
 
       <!-- OUTRO SECTION -->
-      <section class="w-screen h-screen flex-shrink-0 flex flex-col justify-center items-center px-6 text-center z-10 bg-zinc-950 relative whitespace-normal" data-year="PRESENT" data-ratio="15">
+      <section class="w-screen h-screen flex-shrink-0 flex flex-col justify-center items-center px-6 text-center z-10 bg-transparent relative whitespace-normal" data-year="PRESENT" data-ratio="15">
         <h2 class="text-3xl md:text-5xl font-extrabold mb-6 tracking-tight text-white drop-shadow-2xl">The Timeline Continues.</h2>
         <p class="text-lg md:text-xl text-zinc-400 max-w-2xl drop-shadow-md">
           161 years after emancipation, the gap remains at 15¢ to the dollar.<br>True history is the first mandatory step toward true repair.
@@ -193,7 +194,8 @@
     "category": "Policy",
     "location": "Nationwide",
     "shortSummary": "Southern states passed laws effectively re-enslaving Black people through vagrancy laws and labor contracts.",
-    "longDetail": "Any Black person without proof of employment could be arrested and leased out as a convict laborer. This legally enforced the initial post-slavery wealth gap."
+    "longDetail": "Any Black person without proof of employment could be arrested and leased out as a convict laborer. This legally enforced the initial post-slavery wealth gap.",
+    "impact": "Created a captive, unpaid labor force worth billions."
   },
   {
     "year": 1866,
@@ -203,7 +205,7 @@
     "shortSummary": "White mobs and police slaughtered dozens of Black residents and Union veterans in two major cities.",
     "longDetail": "These massacres were deliberate attempts to crush Black political enfranchisement and economic independence right after the Civil War.",
     "deaths": "80+",
-    "impact": "Dozens of Black-owned businesses and schools burned.",
+    "impact": "Over $1 Million in property destroyed (adjusted).",
     "image": "memphis.jpg"
   },
   {
@@ -318,7 +320,8 @@
     "category": "Financial",
     "location": "Kansas",
     "shortSummary": "Tens of thousands of Black Americans fled Southern terror for Kansas.",
-    "longDetail": "This massive refugee crisis was a direct response to the unchecked violence and debt peonage of post-Reconstruction sharecropping."
+    "longDetail": "This massive refugee crisis was a direct response to the unchecked violence and debt peonage of post-Reconstruction sharecropping.",
+    "impact": "Massive flight of Black labor and capital."
   },
   {
     "year": 1880,
@@ -387,7 +390,7 @@
     "shortSummary": "White militias killed 35\u2013300 Black sugar cane workers who had gone on strike for better wages.",
     "longDetail": "One of the largest labor massacres in U.S. history. It effectively destroyed the sugar workers' union and halted Black labor organizing.",
     "deaths": "35-300",
-    "impact": "Destruction of Black sugar workers' union"
+    "impact": "Stolen wages and suppressed earnings for decades."
   },
   {
     "year": 1888,
@@ -466,7 +469,8 @@
     "category": "Policy",
     "location": "Nationwide",
     "shortSummary": "The Supreme Court upheld racial segregation, enshrining 'separate but equal' as constitutional law.",
-    "longDetail": "This ruling enabled states to systematically underfund Black schools, hospitals, and infrastructure for 60 years, engineering an insurmountable wealth gap."
+    "longDetail": "This ruling enabled states to systematically underfund Black schools, hospitals, and infrastructure for 60 years, engineering an insurmountable wealth gap.",
+    "impact": "Billions diverted from Black infrastructure."
   },
   {
     "year": 1897,
@@ -484,7 +488,7 @@
     "shortSummary": "The only successful coup d'\u00e9tat in U.S. history: white men overthrew an elected biracial government, killing 60+.",
     "longDetail": "The violence explicitly targeted and destroyed one of the wealthiest Black communities and business districts in the American South.",
     "deaths": "60-300",
-    "impact": "Total loss of Black municipal power and generational wealth.",
+    "impact": "Millions in stolen property and thriving businesses.",
     "image": "wilmington.jpg"
   },
   {
@@ -503,7 +507,8 @@
     "location": "New Orleans, LA",
     "shortSummary": "A white mob rampaged through New Orleans, killing dozens of Black residents.",
     "longDetail": "Sparked when a Black man defended himself against police brutality. The mob systematically destroyed Black-owned businesses.",
-    "deaths": "28+"
+    "deaths": "28+",
+    "impact": "Dozens of Black businesses burned."
   },
   {
     "year": 1901,
@@ -527,7 +532,8 @@
     "category": "Financial",
     "location": "Alabama",
     "shortSummary": "Federal investigations revealed widespread, systematic slavery persisting in Alabama via debt peonage.",
-    "longDetail": "Despite federal awareness, the practice of arresting Black men and forcing them to work in mines and farms continued for decades."
+    "longDetail": "Despite federal awareness, the practice of arresting Black men and forcing them to work in mines and farms continued for decades.",
+    "impact": "Generations of stolen wages."
   },
   {
     "year": 1904,
@@ -555,7 +561,8 @@
     "location": "Atlanta, GA",
     "shortSummary": "White mobs attacked Black residents over four days, killing 25\u2013100 Black people and destroying businesses.",
     "longDetail": "The violence accelerated the Great Migration northward and helped spark the founding of the NAACP.",
-    "deaths": "25-100"
+    "deaths": "25-100",
+    "impact": "$10M+ in property damage (adjusted)."
   },
   {
     "year": 1907,
@@ -563,7 +570,8 @@
     "category": "Violence",
     "location": "Mississippi",
     "shortSummary": "White terror groups ('Whitecaps') conducted a coordinated campaign of violence against successful Black farmers.",
-    "longDetail": "The explicit goal was to steal Black-owned land and force independent Black farmers back into subservient sharecropping."
+    "longDetail": "The explicit goal was to steal Black-owned land and force independent Black farmers back into subservient sharecropping.",
+    "impact": "Violent expropriation of Black farmland."
   },
   {
     "year": 1908,
@@ -572,7 +580,8 @@
     "location": "Springfield, IL",
     "shortSummary": "A white mob rioted in Abraham Lincoln's hometown, killing 7 people and burning 40 Black homes/businesses.",
     "longDetail": "The violence demonstrated that anti-Black terrorism wasn't confined to the South, directly precipitating the founding of the NAACP.",
-    "deaths": "7"
+    "deaths": "7",
+    "impact": "40 Black homes and businesses burned."
   },
   {
     "year": 1909,
@@ -592,7 +601,7 @@
     "shortSummary": "Hundreds of armed white men hunted Black residents for 16 hours, killing 8\u2013200 people.",
     "longDetail": "The massacre drove every Black resident from the area permanently, functioning as ethnic cleansing. It has been almost completely erased from official state history.",
     "deaths": "8-200",
-    "impact": "Massive property theft via forced abandonment."
+    "impact": "Thousands of acres of Black-owned land stolen."
   },
   {
     "year": 1911,
@@ -610,7 +619,7 @@
     "location": "Cumming, GA",
     "shortSummary": "White mobs violently expelled the entire Black population of Forsyth County (over 1,000 people).",
     "longDetail": "The county remained virtually all-white for the next 75 years, representing a massive theft of Black property and land.",
-    "impact": "Over 1,000 Black residents dispossessed of their homes and farms."
+    "impact": "Massive theft of land and property."
   },
   {
     "year": 1913,
@@ -655,7 +664,7 @@
     "shortSummary": "White mobs conducted a two-day campaign of murder and arson, killing 40\u2013200 Black people.",
     "longDetail": "The attacks left 6,000 Black residents homeless and triggered an NAACP silent protest march down Fifth Avenue in New York.",
     "deaths": "40-200",
-    "impact": "6,000 Black residents rendered homeless."
+    "impact": "$9M+ in property damage (adjusted)."
   },
   {
     "year": 1918,
@@ -674,7 +683,8 @@
     "location": "Nationwide",
     "shortSummary": "White mobs attacked Black communities in dozens of cities. In Elaine, AR, up to 237 Black sharecroppers were slaughtered.",
     "longDetail": "The violence was a nationwide coordinated backlash against returning Black WWI veterans and Black economic mobility.",
-    "deaths": "237+"
+    "deaths": "237+",
+    "impact": "Massive theft of sharecropper crops and land."
   },
   {
     "year": 1920,
@@ -713,7 +723,7 @@
     "shortSummary": "A white mob destroyed the entire Black town of Rosewood, killing 6\u201327+ residents.",
     "longDetail": "The thriving Black population was driven permanently from their homes, effectively erasing a prosperous independent economic ecosystem.",
     "deaths": "6-27+",
-    "impact": "An entire town's property and wealth completely erased."
+    "impact": "Millions in land and property stolen."
   },
   {
     "year": 1924,
@@ -756,7 +766,7 @@
     "location": "Mississippi Delta",
     "shortSummary": "Black flood victims were forced into concentration camps and forced to work at gunpoint without pay.",
     "longDetail": "Relief funds were systematically diverted to white planters while Black refugees suffered extreme deprivation and abuse.",
-    "impact": "Massive wage theft and diversion of federal aid from Black victims."
+    "impact": "Massive wage theft and diversion of federal aid."
   },
   {
     "year": 1929,
@@ -809,6 +819,7 @@
     "location": "Nationwide",
     "shortSummary": "The Federal Housing Administration color-coded Black neighborhoods red, refusing to insure mortgages in those areas.",
     "longDetail": "This guaranteed Black families could not build home equity or access credit, while white families accumulated vast generational wealth.",
+    "impact": "$200+ Billion in lost home equity for Black families.",
     "image": "redlining.jpg"
   },
   {
@@ -818,7 +829,8 @@
     "location": "New York, NY",
     "shortSummary": "A riot erupted after rumors of police brutality against a Black teenager, reflecting deep anger over extreme poverty.",
     "longDetail": "The mayor's own commission cited systemic economic exploitation of Black Harlemites as the root cause, but the report was suppressed.",
-    "deaths": "3"
+    "deaths": "3",
+    "impact": "Millions in property damage from economic desperation."
   },
   {
     "year": 1936,
@@ -890,7 +902,8 @@
     "location": "MI & TX",
     "shortSummary": "Massive race riots triggered by white resentment over Black wartime employment and housing.",
     "longDetail": "Federal troops were deployed. The riots proved that white Northern populations would violently resist integration.",
-    "deaths": "34"
+    "deaths": "34",
+    "impact": "Millions in destroyed Black-owned property."
   },
   {
     "year": 1944,
@@ -899,7 +912,7 @@
     "location": "Nationwide",
     "shortSummary": "The GI Bill offered subsidized mortgages, but local administration allowed systemic denial to Black veterans.",
     "longDetail": "This policy served as a massive driver of the modern racial wealth gap by excluding millions of Black soldiers from the post-war middle class boom.",
-    "impact": "Trillions of dollars in lost middle-class equity for Black veterans."
+    "impact": "Trillions of dollars in lost middle-class equity."
   },
   {
     "year": 1945,
@@ -988,7 +1001,8 @@
     "category": "Policy",
     "location": "South",
     "shortSummary": "In response to Brown v. Board, prominent white politicians formed councils to economically destroy Black activists.",
-    "longDetail": "They weaponized banks and employers to fire, evict, and deny credit to anyone supporting civil rights."
+    "longDetail": "They weaponized banks and employers to fire, evict, and deny credit to anyone supporting civil rights.",
+    "impact": "Systemic denial of mortgages and business loans."
   },
   {
     "year": 1955,
@@ -1008,7 +1022,7 @@
     "location": "Nationwide",
     "shortSummary": "The Interstate Highway System was deliberately routed through prosperous Black neighborhoods.",
     "longDetail": "This destroyed hundreds of Black business districts and homes, a policy known in the community as 'Negro removal'.",
-    "impact": "Destruction of thousands of Black-owned businesses and homes."
+    "impact": "Billions in destroyed Black business districts nationwide."
   },
   {
     "year": 1957,
@@ -1108,7 +1122,8 @@
     "location": "MI & NJ",
     "shortSummary": "Police brutality and extreme economic deprivation sparked the deadliest urban uprisings in modern US history.",
     "longDetail": "The Kerner Commission warned that America was moving toward two societies, one black, one white\u2014separate and unequal.",
-    "deaths": "69"
+    "deaths": "69",
+    "impact": "Over $300 Million in property damage."
   },
   {
     "year": 1968,
@@ -1118,7 +1133,8 @@
     "shortSummary": "Dr. King was assassinated, and police gunned down Black students in SC.",
     "longDetail": "King's murder sparked uprisings in 100+ cities, resulting in massive military deployment and decades of white flight and urban disinvestment.",
     "deaths": "4+",
-    "names": "Dr. Martin Luther King Jr., Samuel Hammond, Delano Middleton, Henry Smith"
+    "names": "Dr. Martin Luther King Jr., Samuel Hammond, Delano Middleton, Henry Smith",
+    "impact": "Over $100 Million in immediate property damage."
   },
   {
     "year": 1969,
@@ -1147,7 +1163,7 @@
     "location": "Nationwide",
     "shortSummary": "Explicitly designed to target Black communities, the policy fueled mass incarceration and destroyed families.",
     "longDetail": "Black Americans were subsequently arrested and imprisoned at 3-4x the rate of white Americans despite similar drug usage rates.",
-    "impact": "Generational wealth and earning power decimated via incarceration."
+    "impact": "Over $1 Trillion in lost Black earning power."
   },
   {
     "year": 1972,
@@ -1160,13 +1176,13 @@
   },
   {
     "year": 1973,
-    "title": "Murder of Santos Rodriguez",
+    "title": "Killing of Clifford Glover",
     "category": "Violence",
-    "location": "Dallas, TX",
-    "shortSummary": "A Dallas police officer played Russian roulette with a 12-year-old boy's head during an interrogation, killing him.",
-    "longDetail": "The officer served just two and a half years in prison, highlighting the profound lack of accountability for police violence.",
+    "location": "New York, NY",
+    "shortSummary": "A plainclothes NYPD officer shot and killed a 10-year-old Black boy walking with his stepfather.",
+    "longDetail": "The officer's subsequent acquittal sparked days of intense protests and riots in Queens. It remains a grim milestone in the history of police killings of Black children.",
     "deaths": "1",
-    "names": "Santos Rodriguez"
+    "names": "Clifford Glover"
   },
   {
     "year": 1974,
@@ -1278,7 +1294,8 @@
     "longDetail": "The resulting fire was deliberately allowed to burn, destroying 65 homes. No police officer or city official was ever criminally charged.",
     "deaths": "11",
     "names": "John Africa and 10 others (including 5 children)",
-    "impact": "65 residential homes destroyed by police fire."
+    "impact": "65 residential homes destroyed.",
+    "image": "move-bombing.jpg"
   },
   {
     "year": 1986,
@@ -1305,7 +1322,7 @@
     "location": "Nationwide",
     "shortSummary": "Established the 100-to-1 sentencing disparity between crack and powder cocaine.",
     "longDetail": "This explicitly racist legislation fueled an explosion in the mass incarceration of Black Americans, devastating families and wealth.",
-    "impact": "Hundreds of thousands of Black men incarcerated, erasing family incomes."
+    "impact": "Millions of prime earning years erased via incarceration."
   },
   {
     "year": 1989,
@@ -1359,7 +1376,7 @@
     "location": "Nationwide",
     "shortSummary": "Passed the 'Three Strikes' law and funded massive prison expansion.",
     "longDetail": "This legislation turbocharged the mass incarceration of Black Americans, stripping millions of men from their communities and the economy.",
-    "impact": "Exponential expansion of the prison-industrial complex."
+    "impact": "Billions diverted from communities into prison infrastructure."
   },
   {
     "year": 1995,
@@ -1427,7 +1444,8 @@
     "shortSummary": "The police killing of Timothy Thomas (the 15th Black man killed by police in 5 years) sparked days of unrest.",
     "longDetail": "Led to a landmark collaborative agreement for police reform, though systemic economic issues remained unaddressed.",
     "deaths": "1",
-    "names": "Timothy Thomas"
+    "names": "Timothy Thomas",
+    "impact": "Tens of millions in economic disruption."
   },
   {
     "year": 2002,
@@ -1464,7 +1482,7 @@
     "location": "New Orleans, LA",
     "shortSummary": "Federal levees failed, flooding predominantly Black neighborhoods; the government response was catastrophically slow.",
     "longDetail": "FEMA abandoned tens of thousands of Black residents. The recovery funds largely bypassed Black homeowners, permanently altering the city's demographics.",
-    "impact": "Massive loss of Black generational home equity."
+    "impact": "Billions in lost Black home equity and land."
   },
   {
     "year": 2006,
@@ -1547,9 +1565,10 @@
     "category": "Violence",
     "location": "MO & NY",
     "shortSummary": "The police killings of Michael Brown and Eric Garner sparked nationwide uprisings against police impunity.",
-    "longDetail": "Garner's plea of 'I can't breathe' and Brown's body left in the street for four hours became symbols of the devaluation of Black life.",
+    "longDetail": "The DOJ subsequently found Ferguson intentionally funded its government through predatory fines on Black residents. Garner's plea of 'I can't breathe' became a global symbol.",
     "deaths": "2",
-    "names": "Michael Brown, Eric Garner"
+    "names": "Michael Brown, Eric Garner",
+    "impact": "Millions extracted via predatory municipal fines."
   },
   {
     "year": 2015,
@@ -1608,6 +1627,7 @@
     "longDetail": "Simultaneously, COVID-19 disproportionately killed Black Americans and decimated Black-owned businesses due to systemic health and financial inequities.",
     "deaths": "1",
     "names": "George Floyd",
+    "impact": "Massive pandemic-driven closure of Black businesses.",
     "image": "george-floyd.jpg"
   },
   {
@@ -1871,8 +1891,13 @@
           if (event.category === 'Financial') borderColor = 'border-amber-500';
 
           let tags = '';
-          if (event.deaths) tags += `<span class="inline-block bg-red-950 text-red-400 text-[10px] uppercase tracking-widest px-2 py-1 rounded mr-2 mb-2 font-bold shadow-lg">💀 ${event.deaths} Deaths</span>`;
-          if (event.impact) tags += `<span class="inline-block bg-amber-950 text-amber-400 text-[10px] uppercase tracking-widest px-2 py-1 rounded mr-2 mb-2 font-bold shadow-lg">💰 ${event.impact}</span>`;
+          if (event.deaths) {
+            let deathLabel = event.deaths === "1" ? "1 Death" : `${event.deaths} Deaths`;
+            tags += `<span class="inline-block bg-red-950 text-red-400 text-[10px] uppercase tracking-widest px-2 py-1 rounded mr-2 mb-2 font-bold shadow-lg">💀 ${deathLabel}</span>`;
+          }
+          if (event.impact) {
+            tags += `<span class="inline-block bg-amber-950 text-amber-400 text-[10px] uppercase tracking-widest px-2 py-1 rounded mr-2 mb-2 font-bold shadow-lg">💰 ${event.impact}</span>`;
+          }
 
           let namesInfo = '';
           if (event.names) namesInfo = `<p class="text-xs text-zinc-400 mb-3 border-l-2 border-zinc-700 pl-3"><strong>Victims/Targets:</strong> ${event.names}</p>`;
@@ -1921,7 +1946,7 @@
       if (currentYear === 1877) {
         historicalHTML += `
           <div class="event-card border-t-4 border-red-600 p-6 flex flex-col justify-center" data-year="1877" data-ratio="${ratioCents}">
-            <h2 class="text-3xl font-black text-red-500 uppercase tracking-widest mb-2 whitespace-normal">Reconstruction Terror</h2>
+            <h2 class="text-xl md:text-3xl font-black text-red-500 uppercase tracking-wider md:tracking-widest mb-2 whitespace-normal break-words">Reconstruction Terror</h2>
             <p class="text-zinc-300 text-lg mb-4 whitespace-normal">You are about to pass <strong class="text-white">2,000+ dots</strong>.</p>
             <p class="text-zinc-400 text-sm leading-relaxed whitespace-normal">Each dot represents a documented person killed in racial terror during this era. This visualizes the scale of coordinated violence used to overthrow multiracial democracy.</p>
           </div>
@@ -1936,7 +1961,7 @@
       if (currentYear === 1950) {
         historicalHTML += `
           <div class="event-card border-t-4 border-red-600 p-6 flex flex-col justify-center" data-year="1950" data-ratio="${ratioCents}">
-            <h2 class="text-3xl font-black text-red-500 uppercase tracking-widest mb-2 whitespace-normal">Jim Crow Lynchings</h2>
+            <h2 class="text-xl md:text-3xl font-black text-red-500 uppercase tracking-wider md:tracking-widest mb-2 whitespace-normal break-words">Jim Crow Lynchings</h2>
             <p class="text-zinc-300 text-lg mb-4 whitespace-normal">You are about to pass <strong class="text-white">4,400+ dots</strong>.</p>
             <p class="text-zinc-400 text-sm leading-relaxed whitespace-normal">Each dot represents a documented victim of lynching during the Jim Crow era. These public executions enforced total economic and political subjugation.</p>
           </div>
