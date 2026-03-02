@@ -1,65 +1,131 @@
 <!DOCTYPE html>
-<html lang="en" class="scroll-smooth">
+<html lang="en">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>What Actually Happened.</title>
-  <!-- Loads the styling engine automatically -->
   <script src="https://cdn.tailwindcss.com"></script>
+  <!-- Load GSAP for smooth horizontal scrolling -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/ScrollTrigger.min.js"></script>
   <style>
-    body { background-color: #09090b; color: white; font-family: sans-serif; overflow-x: hidden; }
-    /* Smooth accordion transition for the 'Read More' buttons */
+    body { background-color: #09090b; color: white; font-family: sans-serif; overflow-x: hidden; margin: 0; padding: 0; }
+    
+    /* The horizontal track container */
+    .horizontal-scroll-wrapper {
+      width: 100vw;
+      height: 100vh;
+      overflow: hidden;
+      position: relative;
+    }
+    
+    .timeline-track {
+      display: flex;
+      flex-direction: row;
+      align-items: center;
+      height: 100%;
+      width: max-content; /* Grows based on content */
+      padding: 0 50vw; /* Start and end in the middle of the screen */
+    }
+
+    /* The visual line running through history */
+    .time-axis {
+      position: absolute;
+      top: 50%;
+      left: 0;
+      right: 0;
+      height: 2px;
+      background: #3f3f46;
+      z-index: 0;
+    }
+
+    /* Event Cards */
+    .event-card {
+      width: 85vw; /* Almost full width on mobile */
+      max-width: 450px;
+      margin-right: 4rem;
+      position: relative;
+      z-index: 10;
+      flex-shrink: 0;
+    }
+    
+    /* Empty Year Markers to force scrolling */
+    .empty-year {
+      width: 4rem; /* Physical distance representing one year */
+      flex-shrink: 0;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      opacity: 0.3;
+      z-index: 5;
+    }
+
+    /* The Wall of Dots */
+    .dot-wall {
+      width: max-content;
+      max-width: 250vw; /* Extremely wide, forces long scrolling */
+      display: flex;
+      flex-wrap: wrap;
+      align-content: center;
+      gap: 4px; /* More space between dots */
+      padding: 0 4rem;
+      flex-shrink: 0;
+    }
+
+    .terror-dot {
+      width: 6px;
+      height: 6px;
+      background-color: rgba(220, 38, 38, 0.7);
+      border-radius: 50%;
+    }
+
     .expandable-content {
       max-height: 0;
       overflow: hidden;
-      transition: max-height 0.4s ease-in-out, opacity 0.4s ease-in-out;
+      transition: max-height 0.4s ease, opacity 0.4s ease;
       opacity: 0;
     }
-    .expanded { max-height: 1000px; opacity: 1; }
-    /* Makes scrolling smooth on mobile */
-    .timeline-card { will-change: transform, opacity; }
+    .expanded { max-height: 800px; opacity: 1; }
   </style>
 </head>
 <body>
 
-  <!-- THE STICKY WEALTH BAR (Always stays at the top of the screen) -->
+  <!-- STICKY WEALTH BAR -->
   <header class="fixed top-0 w-full z-50 bg-black shadow-lg border-b border-zinc-800">
-    <div class="flex justify-between px-4 py-2 text-xs md:text-sm font-bold tracking-wider text-zinc-400">
-      <span id="current-year">1865</span>
+    <div class="flex justify-between px-4 py-3 text-xs md:text-sm font-bold tracking-wider text-zinc-400">
+      <span id="current-year-display">1865</span>
       <span class="hidden md:inline">Median Wealth: Black vs White Families</span>
       <span class="md:hidden">Wealth Gap</span>
       <span id="current-ratio">2¢ per $1</span>
     </div>
     <div class="h-3 w-full bg-zinc-800 relative">
       <div class="absolute top-0 left-0 h-full w-full bg-amber-500 opacity-80"></div>
-      <div id="black-wealth-bar" class="absolute top-0 left-0 h-full bg-emerald-500 transition-all duration-700 ease-out" style="width: 2%;"></div>
+      <div id="black-wealth-bar" class="absolute top-0 left-0 h-full bg-emerald-500 transition-all duration-300 ease-out" style="width: 2%;"></div>
     </div>
   </header>
 
   <!-- INTRO SCREEN -->
-  <section class="min-h-screen flex flex-col justify-center items-center px-6 text-center">
+  <section class="h-screen w-full flex flex-col justify-center items-center px-6 text-center relative z-10 bg-zinc-950">
     <h1 class="text-5xl md:text-7xl font-extrabold mb-6 tracking-tight text-white">What Actually Happened.</h1>
     <p class="text-lg md:text-xl text-zinc-400 max-w-2xl">
       A timeline of mass violence, policy, and the systematic extraction of foundational wealth from Black Americans.
     </p>
     <div class="mt-16 animate-bounce text-zinc-500 font-bold uppercase tracking-widest text-sm">
-      Scroll to begin
+      Scroll Down to Move Forward in Time
     </div>
   </section>
 
-  <!-- WHERE THE CARDS GO -->
-  <main id="timeline-container" class="max-w-2xl mx-auto px-4 pb-32"></main>
+  <!-- THE HORIZONTAL TIMELINE -->
+  <div class="horizontal-scroll-wrapper" id="scroll-wrapper">
+    <div class="time-axis"></div>
+    <div class="timeline-track" id="timeline-track">
+      <!-- JavaScript will inject cards, dots, and empty years here -->
+    </div>
+  </div>
 
   <script>
-    // 1. WEALTH DATA (Powers the top bar)
-    const wealthTimeline = [
-      { year: 1860, ratio: 0.02 }, { year: 1870, ratio: 0.05 }, { year: 1900, ratio: 0.08 },
-      { year: 1930, ratio: 0.08 }, { year: 1950, ratio: 0.10 }, { year: 1970, ratio: 0.17 },
-      { year: 1983, ratio: 0.18 }, { year: 2007, ratio: 0.16 }, { year: 2010, ratio: 0.10 },
-      { year: 2019, ratio: 0.17 }, { year: 2026, ratio: 0.15 }
-    ];
-
-    // 2. TIMELINE EVENTS DATA
+    // 1. WEALTH DATA
     const timelineEvents = [
   {
     year: 1865, 
@@ -1845,83 +1911,90 @@
   },
 ];;
 
-    // 3. APP LOGIC (Builds the webpage)
-    const container = document.getElementById('timeline-container');
-    const blackWealthBar = document.getElementById('black-wealth-bar');
-    const currentYearEl = document.getElementById('current-year');
-    const currentRatioEl = document.getElementById('current-ratio');
+    const track = document.getElementById('timeline-track');
+    
+    // 3. BUILD THE TIMELINE (Mapping every single year from 1865 to 2026)
+    let currentYear = 1865;
+    
+    while(currentYear <= 2026) {
+      // Find all events that happened in this year
+      const eventsThisYear = timelineEvents.filter(e => e.year === currentYear);
+      
+      if (eventsThisYear.length > 0) {
+        // Render the event cards
+        eventsThisYear.forEach(event => {
+          let borderColor = 'border-zinc-700';
+          if (event.category === 'Violence') borderColor = 'border-red-600';
+          if (event.category === 'Policy') borderColor = 'border-blue-500';
 
-    timelineEvents.forEach((event) => {
-      // Color coding
-      let borderColor = 'border-zinc-700';
-      if (event.category === 'Violence') borderColor = 'border-red-600';
-      if (event.category === 'Financial') borderColor = 'border-amber-500';
-      if (event.category === 'Policy') borderColor = 'border-blue-500';
-
-      const isEra = event.isEraCard;
-      const cardBg = isEra ? 'bg-zinc-900 border-l-4 border-white' : `bg-zinc-900 border-l-4 ${borderColor}`;
-      const badge = event.isLesserKnown ? `<span class="bg-zinc-800 text-zinc-300 text-[10px] px-2 py-1 rounded ml-2 uppercase tracking-widest align-middle">Lesser Known</span>` : '';
-
-      // Create the main card
-      let cardHTML = `
-        <article class="mb-12 transform translate-y-8 opacity-0 transition-all duration-700 ease-out timeline-card" data-year="${event.year}">
-          <div class="${cardBg} p-6 rounded-r-lg shadow-2xl">
-            <div class="flex justify-between items-baseline mb-2">
-              <span class="text-2xl font-black text-white">${event.year}</span>
-              <span class="text-xs font-bold uppercase tracking-wider text-zinc-500">${event.category} • ${event.location}</span>
+          const cardHTML = `
+            <div class="event-card bg-zinc-900 border-t-4 ${borderColor} p-6 rounded shadow-2xl" data-year="${event.year}">
+              <div class="flex justify-between items-baseline mb-2">
+                <span class="text-3xl font-black text-white">${event.year}</span>
+                <span class="text-xs font-bold uppercase tracking-wider text-zinc-500">${event.category}</span>
+              </div>
+              <h2 class="text-xl md:text-2xl font-bold mb-3 text-white">${event.title}</h2>
+              <p class="text-zinc-300 text-base leading-relaxed mb-4">${event.shortSummary}</p>
+              
+              <button class="read-more-btn text-amber-500 font-bold text-sm uppercase tracking-widest flex items-center hover:text-amber-400 py-2">
+                <span>Read More</span>
+                <svg class="w-4 h-4 ml-1 transform transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
+              </button>
+              
+              <div class="expandable-content pt-4 mt-2 border-t border-zinc-800">
+                <p class="text-zinc-400 text-sm leading-relaxed">${event.longDetail}</p>
+              </div>
             </div>
-            <h2 class="text-xl md:text-2xl font-bold mb-3 ${isEra ? 'text-amber-400' : 'text-white'}">${event.title} ${badge}</h2>
-            <p class="text-zinc-300 text-base md:text-lg leading-relaxed mb-4">${event.shortSummary}</p>
-            
-            <button class="read-more-btn text-amber-500 font-bold text-sm uppercase tracking-widest flex items-center hover:text-amber-400 transition-colors py-2 touch-manipulation cursor-pointer">
-              <span>Read More</span>
-              <svg class="w-4 h-4 ml-1 transform transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
-            </button>
-            
-            <div class="expandable-content pt-4 mt-2 border-t border-zinc-800">
-              <p class="text-zinc-400 text-sm md:text-base leading-relaxed mb-4">${event.longDetail}</p>
-              <a href="${event.sourceURL}" target="_blank" class="inline-block bg-zinc-800 hover:bg-zinc-700 text-white text-xs font-bold py-3 px-5 rounded transition-colors touch-manipulation">
-                View Source Documentation →
-              </a>
-            </div>
+          `;
+          track.insertAdjacentHTML('beforeend', cardHTML);
+        });
+      } else {
+        // If nothing major is explicitly carded this year, render an empty physical space
+        // This forces the user to physically scroll through time.
+        track.insertAdjacentHTML('beforeend', `
+          <div class="empty-year" data-year="${currentYear}">
+            <div class="w-2 h-2 rounded-full bg-zinc-700 mb-2"></div>
+            <span class="text-xs text-zinc-600 font-bold">${currentYear}</span>
           </div>
-        </article>
-      `;
+        `);
+      }
 
-      // RED DOTS: Inject 2,000 dots for Reconstruction
-      if (event.title === "Reconstruction Terror Era (1865–1877)") {
+      // ==========================================
+      // THE RED DOT WALLS (Injected at specific years)
+      // ==========================================
+      
+      if (currentYear === 1877) {
+        // After Reconstruction, we force them to scroll through 2,000 dots
         let dots = '';
         for(let i=0; i<2000; i++) {
-           dots += `<div class="w-1.5 h-1.5 bg-red-600/60 rounded-full m-[1px] inline-block"></div>`;
+           dots += `<div class="terror-dot"></div>`;
         }
-        cardHTML += `
-          <div class="my-20 px-2 timeline-card" data-year="1865">
-            <p class="text-zinc-500 text-sm font-bold tracking-widest uppercase mb-4 text-center">2,000 Documented Victims</p>
-            <div class="w-full bg-zinc-950 p-4 border border-red-900/30 leading-none text-center">${dots}</div>
-            <p class="text-zinc-500 text-sm mt-4 text-center px-4">Each dot represents a documented racial terror lynching during Reconstruction.</p>
+        track.insertAdjacentHTML('beforeend', `
+          <div class="flex flex-col justify-center items-center ml-8 mr-16" data-year="1877">
+            <h3 class="text-red-500 font-black uppercase tracking-widest mb-4">Reconstruction Terror (2,000+ Victims)</h3>
+            <div class="dot-wall bg-zinc-950 border-y border-red-900/30 py-8">${dots}</div>
           </div>
-        `;
+        `);
       }
 
-      // RED DOTS: Inject 4,400 dots for Jim Crow
-      if (event.title === "The Lynching Epidemic (1877–1950)") {
+      if (currentYear === 1950) {
+        // At the end of the Jim Crow era, we inject the massive 4,400 dot wall
         let dots = '';
         for(let i=0; i<4400; i++) {
-           dots += `<div class="w-1.5 h-1.5 bg-red-600/60 rounded-full m-[1px] inline-block"></div>`;
+           dots += `<div class="terror-dot"></div>`;
         }
-        cardHTML += `
-          <div class="my-20 px-2 timeline-card" data-year="1877">
-            <p class="text-zinc-500 text-sm font-bold tracking-widest uppercase mb-4 text-center">4,400 Documented Victims</p>
-            <div class="w-full bg-zinc-950 p-4 border border-red-900/30 leading-none text-center">${dots}</div>
-            <p class="text-zinc-500 text-sm mt-4 text-center px-4">Each dot represents a documented racial terror lynching between 1877 and 1950.</p>
+        track.insertAdjacentHTML('beforeend', `
+          <div class="flex flex-col justify-center items-center ml-8 mr-16" data-year="1950">
+            <h3 class="text-red-500 font-black uppercase tracking-widest mb-4">Jim Crow Lynchings (4,400+ Victims)</h3>
+            <div class="dot-wall bg-zinc-950 border-y border-red-900/30 py-8">${dots}</div>
           </div>
-        `;
+        `);
       }
 
-      container.insertAdjacentHTML('beforeend', cardHTML);
-    });
+      currentYear++;
+    }
 
-    // Make "Read More" buttons work
+    // Expand Read More buttons
     document.querySelectorAll('.read-more-btn').forEach(btn => {
       btn.addEventListener('click', (e) => {
         const content = e.currentTarget.nextElementSibling;
@@ -1929,30 +2002,50 @@
         content.classList.toggle('expanded');
         icon.classList.toggle('rotate-180');
         e.currentTarget.querySelector('span').innerText = content.classList.contains('expanded') ? 'Show Less' : 'Read More';
+        // Tell GSAP to recalculate the track width since a card just got taller
+        ScrollTrigger.refresh();
       });
     });
 
-    // Watch the scrolling and update the Top Bar
-    const updateWealthDisplay = (year) => {
-      const dataPoint = wealthTimeline.reduce((prev, curr) => {
-        return (Math.abs(curr.year - year) < Math.abs(prev.year - year) ? curr : prev);
-      });
-      const ratioCents = Math.round(dataPoint.ratio * 100);
-      blackWealthBar.style.width = `${ratioCents}%`;
-      currentYearEl.innerText = year;
-      currentRatioEl.innerText = `${ratioCents}¢ per $1`;
-    };
+    // 4. GSAP HORIZONTAL SCROLL LOGIC
+    gsap.registerPlugin(ScrollTrigger);
 
-    const observer = new IntersectionObserver((entries) => {
-      entries.forEach(entry => {
-        if (entry.isIntersecting) {
-          entry.target.classList.remove('opacity-0', 'translate-y-8');
-          updateWealthDisplay(parseInt(entry.target.dataset.year));
-        }
-      });
-    }, { threshold: 0.3 }); 
+    let trackWidth = track.scrollWidth;
 
-    document.querySelectorAll('.timeline-card').forEach(card => { observer.observe(card); });
+    // Pin the wrapper and move the track to the left as the user scrolls down
+    gsap.to(track, {
+      x: () => -(trackWidth - window.innerWidth),
+      ease: "none",
+      scrollTrigger: {
+        trigger: ".horizontal-scroll-wrapper",
+        pin: true,
+        scrub: 1, // Smooth dragging effect
+        end: () => "+=" + trackWidth // The scroll distance equals the width of the track
+      }
+    });
+
+    // 5. UPDATE WEALTH BAR BASED ON SCROLL POSITION
+    // We check which element is currently in the middle of the screen
+    ScrollTrigger.create({
+      trigger: ".horizontal-scroll-wrapper",
+      start: "top top",
+      end: () => "+=" + trackWidth,
+      onUpdate: (self) => {
+        // Calculate approximate year based on scroll progress
+        let progress = self.progress; 
+        let calcYear = Math.round(1865 + (progress * (2026 - 1865)));
+        
+        // Find closest wealth data
+        const dataPoint = wealthTimeline.reduce((prev, curr) => {
+          return (Math.abs(curr.year - calcYear) < Math.abs(prev.year - calcYear) ? curr : prev);
+        });
+        
+        const ratioCents = Math.round(dataPoint.ratio * 100);
+        document.getElementById('black-wealth-bar').style.width = `${ratioCents}%`;
+        document.getElementById('current-year-display').innerText = calcYear;
+        document.getElementById('current-ratio').innerText = `${ratioCents}¢ per $1`;
+      }
+    });
   </script>
 </body>
 </html>
