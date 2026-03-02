@@ -9,26 +9,44 @@
   <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/ScrollTrigger.min.js"></script>
   <style>
-    body { background-color: #09090b; color: white; font-family: sans-serif; overflow-x: hidden; margin: 0; padding: 0; }
-    
-    /* The horizontal track container */
+    /* NOISE TEXTURE TO BACKGROUND */
+    body { 
+        background-color: #09090b; 
+        color: white; 
+        font-family: sans-serif; 
+        overflow-x: hidden; 
+        margin: 0; 
+        padding: 0; 
+    }
+
+    .noise-overlay {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100vw;
+        height: 100vh;
+        pointer-events: none;
+        z-index: 1000;
+        opacity: 0.12;
+        background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)'/%3E%3C/svg%3E");
+    }
+
     .horizontal-scroll-wrapper {
       width: 100vw;
       height: 100vh;
       overflow: hidden;
       position: relative;
     }
-    
+
     .timeline-track {
       display: flex;
       flex-direction: row;
       align-items: center;
       height: 100%;
-      width: max-content; /* Grows based on content */
-      padding: 0 50vw; /* Start and end in the middle of the screen */
+      width: max-content;
+      padding: 0 50vw; 
     }
 
-    /* The visual line running through history */
     .time-axis {
       position: absolute;
       top: 50%;
@@ -39,38 +57,31 @@
       z-index: 0;
     }
 
-    /* Event Cards */
     .event-card {
-      width: 85vw; /* Almost full width on mobile */
-      max-width: 450px;
+      width: 85vw;
+      max-width: 420px;
       margin-right: 4rem;
       position: relative;
       z-index: 10;
       flex-shrink: 0;
     }
-    
-    /* Empty Year Markers to force scrolling */
-    .empty-year {
-      width: 4rem; /* Physical distance representing one year */
+
+    /* FIX: Ensure the dot wall completely contains itself and does not overlap cards */
+    .dot-wall-container {
       flex-shrink: 0;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
-      opacity: 0.3;
-      z-index: 5;
+      margin-left: 2rem;
+      margin-right: 4rem;
+      position: relative;
+      z-index: 10;
     }
 
-    /* The Wall of Dots */
     .dot-wall {
-      width: max-content;
-      max-width: 250vw; /* Extremely wide, forces long scrolling */
-      display: flex;
-      flex-wrap: wrap;
-      align-content: center;
-      gap: 4px; /* More space between dots */
-      padding: 0 4rem;
-      flex-shrink: 0;
+      display: grid;
+      grid-template-rows: repeat(6, 1fr);
+      grid-auto-flow: column;
+      gap: 6px; 
+      width: max-content; /* This allows it to expand horizontally as much as needed */
+      padding: 2rem;
     }
 
     .terror-dot {
@@ -86,18 +97,21 @@
       transition: max-height 0.4s ease, opacity 0.4s ease;
       opacity: 0;
     }
-    .expanded { max-height: 800px; opacity: 1; }
+    .expanded { max-height: 1200px; opacity: 1; padding-bottom: 1rem; }
   </style>
 </head>
 <body>
 
-  <!-- STICKY WEALTH BAR -->
+  <div class="noise-overlay"></div>
+
+  <!-- STICKY WEALTH BAR RE-WORDED FOR CLARITY -->
   <header class="fixed top-0 w-full z-50 bg-black shadow-lg border-b border-zinc-800">
-    <div class="flex justify-between px-4 py-3 text-xs md:text-sm font-bold tracking-wider text-zinc-400">
-      <span id="current-year-display">1865</span>
-      <span class="hidden md:inline">Median Wealth: Black vs White Families</span>
-      <span class="md:hidden">Wealth Gap</span>
-      <span id="current-ratio">2¢ per $1</span>
+    <div class="flex flex-col md:flex-row justify-between items-center px-4 py-2 font-bold tracking-wider">
+      <div class="text-zinc-400 text-xs md:text-sm">YEAR: <span id="current-year-display" class="text-white text-lg">1865</span></div>
+      <div class="text-[10px] md:text-xs text-zinc-500 uppercase tracking-widest text-center mt-1 md:mt-0">
+        Median Family Wealth: <span class="text-emerald-400">Black Families</span> vs. <span class="text-amber-500">White Families (Baseline)</span>
+      </div>
+      <div class="text-zinc-400 text-xs md:text-sm mt-1 md:mt-0">GAP: <span id="current-ratio" class="text-emerald-400 text-lg">2¢ per $1</span></div>
     </div>
     <div class="h-3 w-full bg-zinc-800 relative">
       <div class="absolute top-0 left-0 h-full w-full bg-amber-500 opacity-80"></div>
@@ -105,1843 +119,1547 @@
     </div>
   </header>
 
-  <!-- INTRO SCREEN -->
   <section class="h-screen w-full flex flex-col justify-center items-center px-6 text-center relative z-10 bg-zinc-950">
-    <h1 class="text-5xl md:text-7xl font-extrabold mb-6 tracking-tight text-white">What Actually Happened.</h1>
-    <p class="text-lg md:text-xl text-zinc-400 max-w-2xl">
+    <h1 class="text-5xl md:text-7xl font-extrabold mb-6 tracking-tight text-white relative z-20">What Actually Happened.</h1>
+    <p class="text-lg md:text-xl text-zinc-400 max-w-2xl relative z-20">
       A timeline of mass violence, policy, and the systematic extraction of foundational wealth from Black Americans.
     </p>
-    <div class="mt-16 animate-bounce text-zinc-500 font-bold uppercase tracking-widest text-sm">
+    <div class="mt-16 animate-bounce text-zinc-500 font-bold uppercase tracking-widest text-sm relative z-20">
       Scroll Down to Move Forward in Time
     </div>
   </section>
 
-  <!-- THE HORIZONTAL TIMELINE -->
   <div class="horizontal-scroll-wrapper" id="scroll-wrapper">
     <div class="time-axis"></div>
     <div class="timeline-track" id="timeline-track">
-      <!-- JavaScript will inject cards, dots, and empty years here -->
+      <!-- Injected by JS -->
     </div>
   </div>
 
   <script>
-    // 1. WEALTH DATA
+    const wealthTimeline = [
+      { year: 1860, ratio: 0.02 }, { year: 1870, ratio: 0.05 }, { year: 1900, ratio: 0.08 },
+      { year: 1930, ratio: 0.08 }, { year: 1950, ratio: 0.10 }, { year: 1970, ratio: 0.17 },
+      { year: 1983, ratio: 0.18 }, { year: 2007, ratio: 0.16 }, { year: 2010, ratio: 0.10 },
+      { year: 2019, ratio: 0.17 }, { year: 2026, ratio: 0.15 }
+    ];
+
     const timelineEvents = [
   {
-    year: 1865, 
-    title: "Black Codes Enacted", 
-    category: "Policy", 
-    location: "Nationwide",
-    shortSummary: "Southern states passed laws effectively re-enslaving Black people through vagrancy laws and labor contracts.",
-    longDetail: "Any Black person without proof of employment could be arrested and leased out as a convict laborer. This legally enforced the initial post-slavery wealth gap.",
-    sourceURL: "#", 
-    isLesserKnown: false, 
-    isEraCard: false
-  },
-  {
-    year: 1866, 
-    title: "Memphis & New Orleans Massacres", 
-    category: "Violence", 
-    location: "TN & LA",
-    shortSummary: "White mobs and police slaughtered dozens of Black residents and Union veterans in two major cities.",
-    longDetail: "These massacres were deliberate attempts to crush Black political enfranchisement and economic independence right after the Civil War.",
-    sourceURL: "#", 
-    isLesserKnown: false, 
-    isEraCard: false
-  },
-  {
-    year: 1867, 
-    title: "Ku Klux Klan Expansion", 
-    category: "Violence", 
-    location: "South",
-    shortSummary: "The KKK grew into a mass paramilitary force across the South.",
-    longDetail: "Their explicit purpose was the assassination of Black political leaders, teachers, and landowners to maintain white supremacy.",
-    sourceURL: "#", 
-    isLesserKnown: false, 
-    isEraCard: false
-  },
-  {
-    year: 1868, 
-    title: "Opelousas & Camilla Massacres", 
-    category: "Violence", 
-    location: "LA & GA",
-    shortSummary: "Paramilitaries murdered over 200 Black voters across two major massacres.",
-    longDetail: "Designed to overthrow Republican governance. It remains almost entirely unknown despite a death toll matching America's worst catastrophes.",
-    sourceURL: "#", 
-    isLesserKnown: false, 
-    isEraCard: false
-  },
-  {
-    year: 1869, 
-    title: "Georgia Legislature Expulsions", 
-    category: "Policy", 
-    location: "Atlanta, GA",
-    shortSummary: "The Georgia state legislature illegally expelled all 33 of its elected Black representatives.",
-    longDetail: "A blatant political coup demonstrating that even democratic elections would be overturned to prevent Black political power.",
-    sourceURL: "#", 
-    isLesserKnown: false, 
-    isEraCard: false
-  },
-  {
-    year: 1870, 
-    title: "Eutaw Massacre", 
-    category: "Violence", 
-    location: "Eutaw, AL",
-    shortSummary: "White Democrats opened fire on a crowd of Black Republican voters, killing 4 and wounding 54.",
-    longDetail: "The attack was explicitly designed to prevent Black political organizing ahead of elections, permanently damaging local Black political power.",
-    sourceURL: "#", 
-    isLesserKnown: false, 
-    isEraCard: false
-  },
-  {
-    year: 1871, 
-    title: "Meridian Massacre", 
-    category: "Violence", 
-    location: "Meridian, MS",
-    shortSummary: "A courthouse confrontation turned into a massacre, killing three Black Republican legislators and 25+ others.",
-    longDetail: "White supremacist groups used the killings as a successful blueprint for overthrowing Reconstruction governments across the American South.",
-    sourceURL: "#", 
-    isLesserKnown: false, 
-    isEraCard: false
-  },
-  {
-    year: 1872, 
-    title: "Frankfort Election Riot", 
-    category: "Violence", 
-    location: "Frankfort, KY",
-    shortSummary: "White mobs attacked Black voters attempting to participate in municipal elections.",
-    longDetail: "State militias had to be called in, but the violence succeeded in suppressing the Black vote and setting a template for poll-terror.",
-    sourceURL: "#", 
-    isLesserKnown: false, 
-    isEraCard: false
-  },
-  {
-    year: 1873, 
-    title: "Colfax Massacre", 
-    category: "Violence", 
-    location: "Colfax, LA",
-    shortSummary: "A white paramilitary group slaughtered roughly 150 Black men defending the Grant Parish courthouse.",
-    longDetail: "The U.S. Supreme Court later used this event to neuter federal enforcement of Black civil rights in United States v. Cruikshank.",
-    sourceURL: "#", 
-    isLesserKnown: false, 
-    isEraCard: false
-  },
-  {
-    year: 1874, 
-    title: "Coushatta Massacre", 
-    category: "Violence", 
-    location: "Coushatta, LA",
-    shortSummary: "White supremacist Red Shirts forced six Republican officeholders (four Black) to resign, then murdered them.",
-    longDetail: "Part of a coordinated campaign to overthrow biracial governance and establish exclusive white economic and political control.",
-    sourceURL: "#", 
-    isLesserKnown: false, 
-    isEraCard: false
-  },
-  {
-    year: 1875, 
-    title: "Clinton Massacre & The Mississippi Plan", 
-    category: "Violence", 
-    location: "Clinton, MS",
-    shortSummary: "White paramilitaries murdered up to 50 Black residents to suppress voting.",
-    longDetail: "This kicked off the 'Mississippi Plan', a systemic campaign of state-sanctioned terror that successfully overthrew Reconstruction in the state.",
-    sourceURL: "#", 
-    isLesserKnown: false, 
-    isEraCard: false
-  },
-  {
-    year: 1876, 
-    title: "Hamburg Massacre", 
-    category: "Violence", 
-    location: "Hamburg, SC",
-    shortSummary: "Red Shirt white supremacists attacked Black militia members, killing 5 and torturing others.",
-    longDetail: "The massacre helped swing the 1876 presidential election and ultimately ended Reconstruction, abandoning Black Americans to Jim Crow.",
-    sourceURL: "#", 
-    isLesserKnown: false, 
-    isEraCard: false
-  },
-  {
-    year: 1877, 
-    title: "Compromise of 1877", 
-    category: "Policy", 
-    location: "Nationwide",
-    shortSummary: "Federal troops were withdrawn from the South in a political deal to settle the presidential election.",
-    longDetail: "This completely abandoned Black Americans to a century of Jim Crow apartheid, state-sanctioned terror, and economic exclusion.",
-    sourceURL: "#", 
-    isLesserKnown: false, 
-    isEraCard: false
-  },
-  {
-    year: 1878, 
-    title: "Posse Comitatus Act", 
-    category: "Policy", 
-    location: "Nationwide",
-    shortSummary: "Congress passed a law forbidding the use of the military to enforce domestic policies.",
-    longDetail: "This effectively removed the last layer of federal protection for Black Southerners against local white militias and lynch mobs.",
-    sourceURL: "#", 
-    isLesserKnown: false, 
-    isEraCard: false
-  },
-  {
-    year: 1879, 
-    title: "The Exoduster Movement", 
-    category: "Financial", 
-    location: "Kansas",
-    shortSummary: "Tens of thousands of Black Americans fled Southern terror for Kansas.",
-    longDetail: "This massive refugee crisis was a direct response to the unchecked violence and debt peonage of post-Reconstruction sharecropping.",
-    sourceURL: "#", 
-    isLesserKnown: false, 
-    isEraCard: false
-  },
-  {
-    year: 1880, 
-    title: "Election Massacres", 
-    category: "Violence", 
-    location: "Nationwide",
-    shortSummary: "Widespread violence at polls across the South left dozens of Black voters dead.",
-    longDetail: "The normalization of using mass murder to secure local and federal elections for white supremacist candidates.",
-    sourceURL: "#", 
-    isLesserKnown: false, 
-    isEraCard: false
-  },
-  {
-    year: 1881, 
-    title: "Tennessee Segregation Laws", 
-    category: "Policy", 
-    location: "Tennessee",
-    shortSummary: "Tennessee became the first state to pass comprehensive laws mandating segregation in rail cars.",
-    longDetail: "This triggered a wave of 'Jim Crow' transportation laws across the South, legally isolating Black Americans from public life.",
-    sourceURL: "#", 
-    isLesserKnown: false, 
-    isEraCard: false
-  },
-  {
-    year: 1882, 
-    title: "Eight Box Law", 
-    category: "Policy", 
-    location: "South Carolina",
-    shortSummary: "An intentionally confusing voting system designed entirely to disenfranchise illiterate Black voters.",
-    longDetail: "Combined with poll taxes and terror, this functionally eliminated Black political power in the state for 80 years.",
-    sourceURL: "#", 
-    isLesserKnown: false, 
-    isEraCard: false
-  },
-  {
-    year: 1883, 
-    title: "Civil Rights Cases of 1883", 
-    category: "Policy", 
-    location: "Nationwide",
-    shortSummary: "The Supreme Court struck down the Civil Rights Act of 1875.",
-    longDetail: "The Court ruled that the Constitution did not protect Black Americans from discrimination by private businesses, legalizing nationwide segregation.",
-    sourceURL: "#", 
-    isLesserKnown: false, 
-    isEraCard: false
-  },
-  {
-    year: 1884, 
-    title: "Danville Massacre", 
-    category: "Violence", 
-    location: "Danville, VA",
-    shortSummary: "A white mob slaughtered Black residents to suppress the Readjuster Party.",
-    longDetail: "The massacre succeeded in driving Black political leaders from power in Virginia, ensuring white monopolization of state resources.",
-    sourceURL: "#", 
-    isLesserKnown: false, 
-    isEraCard: false
-  },
-  {
-    year: 1885, 
-    title: "Carrollton Courthouse Massacre", 
-    category: "Violence", 
-    location: "Carrollton, MS",
-    shortSummary: "A white mob stormed a courthouse and murdered 23 Black men.",
-    longDetail: "The men were attending a trial. The massacre was designed to prove that Black Americans had no legal protection or right to the justice system.",
-    sourceURL: "#", 
-    isLesserKnown: false, 
-    isEraCard: false
-  },
-  {
-    year: 1886, 
-    title: "Washington County Massacre", 
-    category: "Violence", 
-    location: "Texas",
-    shortSummary: "White mobs murdered over 8 Black political organizers over election disputes.",
-    longDetail: "The perpetrators systematically hunted down Black leaders to prevent them from testifying about voter fraud and suppression.",
-    sourceURL: "#", 
-    isLesserKnown: false, 
-    isEraCard: false
-  },
-  {
-    year: 1887, 
-    title: "Thibodaux Massacre", 
-    category: "Violence", 
-    location: "Thibodaux, LA",
-    shortSummary: "White militias killed 35–300 Black sugar cane workers who had gone on strike for better wages.",
-    longDetail: "One of the largest labor massacres in U.S. history. It effectively destroyed the sugar workers' union and halted Black labor organizing.",
-    sourceURL: "#", 
-    isLesserKnown: false, 
-    isEraCard: false
-  },
-  {
-    year: 1888, 
-    title: "Wahalak Massacre", 
-    category: "Violence", 
-    location: "Wahalak, MS",
-    shortSummary: "A white mob hunted and killed multiple Black residents following a dispute.",
-    longDetail: "Part of a broader pattern where any minor dispute between a white and Black person resulted in the collective punishment of the Black community.",
-    sourceURL: "#", 
-    isLesserKnown: false, 
-    isEraCard: false
-  },
-  {
-    year: 1889, 
-    title: "Leflore County Massacre", 
-    category: "Violence", 
-    location: "Mississippi",
-    shortSummary: "White militias murdered 25+ Black residents to stop them from forming a cooperative buying club.",
-    longDetail: "A direct, violent assault on Black economic self-sufficiency, ensuring Black farmers remained trapped in the debt peonage of sharecropping.",
-    sourceURL: "#", 
-    isLesserKnown: false, 
-    isEraCard: false
-  },
-  {
-    year: 1890, 
-    title: "Mississippi Constitution Disenfranchisement", 
-    category: "Policy", 
-    location: "Mississippi",
-    shortSummary: "Mississippi rewrote its constitution specifically to disenfranchise Black voters via poll taxes and literacy tests.",
-    longDetail: "This became the model for the rest of the South, effectively erasing Black political representation for the next 75 years.",
-    sourceURL: "#", 
-    isLesserKnown: false, 
-    isEraCard: false
-  },
-  {
-    year: 1891, 
-    title: "Arkansas Segregation Act", 
-    category: "Policy", 
-    location: "Arkansas",
-    shortSummary: "Arkansas passed sweeping laws segregating all trains and public facilities.",
-    longDetail: "A systematic, legally enforced humiliation designed to limit Black mobility and economic opportunity.",
-    sourceURL: "#", 
-    isLesserKnown: false, 
-    isEraCard: false
-  },
-  {
-    year: 1892, 
-    title: "People's Grocery Lynching", 
-    category: "Violence", 
-    location: "Memphis, TN",
-    shortSummary: "Three Black business owners were lynched by a white mob.",
-    longDetail: "Their successful grocery store competed with a white-owned store. The triple lynching prompted Ida B. Wells' lifelong anti-lynching crusade.",
-    sourceURL: "#", 
-    isLesserKnown: false, 
-    isEraCard: false
-  },
-  {
-    year: 1893, 
-    title: "Lynching of Henry Smith", 
-    category: "Violence", 
-    location: "Paris, TX",
-    shortSummary: "Henry Smith was tortured and burned alive before a crowd of 10,000 white spectators.",
-    longDetail: "A spectacular, heavily photographed lynching that demonstrated how racial terror had become public entertainment.",
-    sourceURL: "#", 
-    isLesserKnown: false, 
-    isEraCard: false
-  },
-  {
-    year: 1894, 
-    title: "Millington Triple Lynching", 
-    category: "Violence", 
-    location: "Millington, TN",
-    shortSummary: "Six Black men were abducted by a mob and lynched.",
-    longDetail: "Law enforcement actively participated by handing the men over, a common feature of Jim Crow era racial terror.",
-    sourceURL: "#", 
-    isLesserKnown: false, 
-    isEraCard: false
-  },
-  {
-    year: 1895, 
-    title: "South Carolina Constitution Rewrite", 
-    category: "Policy", 
-    location: "South Carolina",
-    shortSummary: "Following Mississippi's lead, SC rewrote its constitution to eliminate the Black vote.",
-    longDetail: "Black delegate Thomas E. Miller accurately predicted this would lead to decades of unchecked racial violence and economic theft.",
-    sourceURL: "#", 
-    isLesserKnown: false, 
-    isEraCard: false
-  },
-  {
-    year: 1896, 
-    title: "Plessy v. Ferguson", 
-    category: "Policy", 
-    location: "Nationwide",
-    shortSummary: "The Supreme Court upheld racial segregation, enshrining 'separate but equal' as constitutional law.",
-    longDetail: "This ruling enabled states to systematically underfund Black schools, hospitals, and infrastructure for 60 years, engineering an insurmountable wealth gap.",
-    sourceURL: "#", 
-    isLesserKnown: false, 
-    isEraCard: false
-  },
-  {
-    year: 1897, 
-    title: "Louisiana Disenfranchisement", 
-    category: "Policy", 
-    location: "Louisiana",
-    shortSummary: "Louisiana introduced the 'Grandfather Clause' to protect white voters while barring Black voters.",
-    longDetail: "Registered Black voters in Louisiana plummeted from 130,000 in 1896 to just 1,342 by 1904.",
-    sourceURL: "#", 
-    isLesserKnown: false, 
-    isEraCard: false
-  },
-  {
-    year: 1898, 
-    title: "Wilmington Coup and Massacre", 
-    category: "Violence", 
-    location: "Wilmington, NC",
-    shortSummary: "The only successful coup d'état in U.S. history: white men overthrew an elected biracial government, killing 60+.",
-    longDetail: "The violence explicitly targeted and destroyed one of the wealthiest Black communities and business districts in the American South.",
-    sourceURL: "#", 
-    isLesserKnown: false, 
-    isEraCard: false
-  },
-  {
-    year: 1899, 
-    title: "Palmetto Mass Lynching", 
-    category: "Violence", 
-    location: "Palmetto, GA",
-    shortSummary: "Nine Black men were tied to trees and executed by a white mob following an alleged arson.",
-    longDetail: "The mass execution was justified by local papers, further normalizing the mass slaughter of Black Americans without trial.",
-    sourceURL: "#", 
-    isLesserKnown: false, 
-    isEraCard: false
-  },
-  {
-    year: 1900, 
-    title: "Robert Charles Riots", 
-    category: "Violence", 
-    location: "New Orleans, LA",
-    shortSummary: "A white mob rampaged through New Orleans, killing dozens of Black residents.",
-    longDetail: "Sparked when a Black man defended himself against police brutality. The mob systematically destroyed Black-owned businesses.",
-    sourceURL: "#", 
-    isLesserKnown: false, 
-    isEraCard: false
-  },
-  {
-    year: 1901, 
-    title: "George Henry White Leaves Congress", 
-    category: "Policy", 
-    location: "Washington, DC",
-    shortSummary: "The last Black Congressman of the Reconstruction era delivered his farewell address.",
-    longDetail: "Due to systemic disenfranchisement, there would not be another Black representative in Congress for 28 years.",
-    sourceURL: "#", 
-    isLesserKnown: false, 
-    isEraCard: false
-  },
-  {
-    year: 1902, 
-    title: "Virginia Constitution Disenfranchisement", 
-    category: "Policy", 
-    location: "Virginia",
-    shortSummary: "Virginia formally stripped voting rights from Black citizens.",
-    longDetail: "The state engineered a system that guaranteed massive underfunding of Black schools and absolute white control of state resources.",
-    sourceURL: "#", 
-    isLesserKnown: false, 
-    isEraCard: false
-  },
-  {
-    year: 1903, 
-    title: "Alabama Peonage Cases", 
-    category: "Financial", 
-    location: "Alabama",
-    shortSummary: "Federal investigations revealed widespread, systematic slavery persisting in Alabama via debt peonage.",
-    longDetail: "Despite federal awareness, the practice of arresting Black men and forcing them to work in mines and farms continued for decades.",
-    sourceURL: "#", 
-    isLesserKnown: false, 
-    isEraCard: false
-  },
-  {
-    year: 1904, 
-    title: "Statesboro Burnings", 
-    category: "Violence", 
-    location: "Statesboro, GA",
-    shortSummary: "Two Black men, Paul Reed and Will Cato, were burned alive at the stake by a mob.",
-    longDetail: "The mob bypassed the legal system entirely to inflict maximum public terror on the local Black population.",
-    sourceURL: "#", 
-    isLesserKnown: false, 
-    isEraCard: false
-  },
-  {
-    year: 1905, 
-    title: "Watkinsville Lynching", 
-    category: "Violence", 
-    location: "Watkinsville, GA",
-    shortSummary: "A mob broke into a jail and murdered eight Black men in a single night.",
-    longDetail: "None of the men had been convicted of a crime, underscoring the absolute lack of due process for Black Americans.",
-    sourceURL: "#", 
-    isLesserKnown: false, 
-    isEraCard: false
-  },
-  {
-    year: 1906, 
-    title: "Atlanta Massacre", 
-    category: "Violence", 
-    location: "Atlanta, GA",
-    shortSummary: "White mobs attacked Black residents over four days, killing 25–100 Black people and destroying businesses.",
-    longDetail: "The violence accelerated the Great Migration northward and helped spark the founding of the NAACP.",
-    sourceURL: "#", 
-    isLesserKnown: false, 
-    isEraCard: false
-  },
-  {
-    year: 1907, 
-    title: "Mississippi Whitecap Terror", 
-    category: "Violence", 
-    location: "Mississippi",
-    shortSummary: "White terror groups ('Whitecaps') conducted a coordinated campaign of violence against successful Black farmers.",
-    longDetail: "The explicit goal was to steal Black-owned land and force independent Black farmers back into subservient sharecropping.",
-    sourceURL: "#", 
-    isLesserKnown: false, 
-    isEraCard: false
-  },
-  {
-    year: 1908, 
-    title: "Springfield Race Riot", 
-    category: "Violence", 
-    location: "Springfield, IL",
-    shortSummary: "A white mob rioted in Abraham Lincoln's hometown, killing 7 people and burning 40 Black homes/businesses.",
-    longDetail: "The violence demonstrated that anti-Black terrorism wasn't confined to the South, directly precipitating the founding of the NAACP.",
-    sourceURL: "#", 
-    isLesserKnown: false, 
-    isEraCard: false
-  },
-  {
-    year: 1909, 
-    title: "Cairo Lynching and Riot", 
-    category: "Violence", 
-    location: "Cairo, IL",
-    shortSummary: "A white mob lynched a Black man and a white man, leading to widespread riots.",
-    longDetail: "Showcased the volatility and violence of white mobs outside the Deep South.",
-    sourceURL: "#", 
-    isLesserKnown: false, 
-    isEraCard: false
-  },
-  {
-    year: 1910, 
-    title: "Slocum Massacre", 
-    category: "Violence", 
-    location: "Slocum, TX",
-    shortSummary: "Hundreds of armed white men hunted Black residents for 16 hours, killing 8–200 people.",
-    longDetail: "The massacre drove every Black resident from the area permanently, functioning as ethnic cleansing. It has been almost completely erased from official state history.",
-    sourceURL: "#", 
-    isLesserKnown: false, 
-    isEraCard: false
-  },
-  {
-    year: 1911, 
-    title: "Lake City Mass Lynching", 
-    category: "Violence", 
-    location: "Lake City, FL",
-    shortSummary: "Six Black men were lynched simultaneously by a white mob.",
-    longDetail: "The men were murdered based on completely unproven allegations, a standard tactic to terrorize Black communities into submission.",
-    sourceURL: "#", 
-    isLesserKnown: false, 
-    isEraCard: false
-  },
-  {
-    year: 1912, 
-    title: "Forsyth County Expulsion", 
-    category: "Violence", 
-    location: "Cumming, GA",
-    shortSummary: "White mobs violently expelled the entire Black population of Forsyth County (over 1,000 people).",
-    longDetail: "The county remained virtually all-white for the next 75 years, representing a massive theft of Black property and land.",
-    sourceURL: "#", 
-    isLesserKnown: false, 
-    isEraCard: false
-  },
-  {
-    year: 1913, 
-    title: "Federal Government Segregation", 
-    category: "Policy", 
-    location: "Washington, DC",
-    shortSummary: "President Woodrow Wilson mandated the segregation of all federal workplaces.",
-    longDetail: "This policy downgraded thousands of Black federal workers, stripping them of middle-class incomes and prestige.",
-    sourceURL: "#", 
-    isLesserKnown: false, 
-    isEraCard: false
-  },
-  {
-    year: 1914, 
-    title: "Monroe Mass Lynching", 
-    category: "Violence", 
-    location: "Monroe, LA",
-    shortSummary: "Multiple Black residents were murdered in a coordinated string of lynchings.",
-    longDetail: "Local authorities refused to investigate, cementing the total impunity of white lynch mobs.",
-    sourceURL: "#", 
-    isLesserKnown: false, 
-    isEraCard: false
-  },
-  {
-    year: 1915, 
-    title: "Birth of a Nation Revives KKK", 
-    category: "Policy", 
-    location: "Nationwide",
-    shortSummary: "The release of the intensely racist film 'The Birth of a Nation' led directly to the rebirth of the Ku Klux Klan.",
-    longDetail: "The film was screened at the White House and catalyzed a massive resurgence in organized racial terror across the country.",
-    sourceURL: "#", 
-    isLesserKnown: false, 
-    isEraCard: false
-  },
-  {
-    year: 1916, 
-    title: "The Waco Horror", 
-    category: "Violence", 
-    location: "Waco, TX",
-    shortSummary: "Jesse Washington, a Black teenager, was castrated, mutilated, and burned alive before 10,000 cheering white spectators.",
-    longDetail: "Photographs of his charred body were sold as postcards, representing the absolute nadir of American racial sadism.",
-    sourceURL: "#", 
-    isLesserKnown: false, 
-    isEraCard: false
-  },
-  {
-    year: 1917, 
-    title: "East St. Louis Massacre", 
-    category: "Violence", 
-    location: "East St. Louis, IL",
-    shortSummary: "White mobs conducted a two-day campaign of murder and arson, killing 40–200 Black people.",
-    longDetail: "The attacks left 6,000 Black residents homeless and triggered an NAACP silent protest march down Fifth Avenue in New York.",
-    sourceURL: "#", 
-    isLesserKnown: false, 
-    isEraCard: false
-  },
-  {
-    year: 1918, 
-    title: "Brooks County Mass Lynchings", 
-    category: "Violence", 
-    location: "Brooks County, GA",
-    shortSummary: "Following a dispute, a white mob lynched Mary Turner (who was pregnant) and at least 10 other Black residents.",
-    longDetail: "When Mary Turner protested her husband's lynching, the mob hung her upside down, cut her open, and crushed her unborn child.",
-    sourceURL: "#", 
-    isLesserKnown: false, 
-    isEraCard: false
-  },
-  {
-    year: 1919, 
-    title: "Red Summer & Elaine Massacre", 
-    category: "Violence", 
-    location: "Nationwide",
-    shortSummary: "White mobs attacked Black communities in dozens of cities. In Elaine, AR, up to 237 Black sharecroppers were slaughtered.",
-    longDetail: "The violence was a nationwide coordinated backlash against returning Black WWI veterans and Black economic mobility.",
-    sourceURL: "#", 
-    isLesserKnown: false, 
-    isEraCard: false
-  },
-  {
-    year: 1920, 
-    title: "Ocoee Massacre & Duluth Lynchings", 
-    category: "Violence", 
-    location: "FL & MN",
-    shortSummary: "White mobs massacred 50+ Black voters in Florida and lynched three Black circus workers in Minnesota.",
-    longDetail: "Demonstrated that spectacular racial violence was used to suppress voting in the South and terrorize populations in the North.",
-    sourceURL: "#", 
-    isLesserKnown: false, 
-    isEraCard: false
-  },
-  {
-    year: 1921, 
-    title: "Tulsa Race Massacre", 
-    category: "Violence", 
-    location: "Tulsa, OK",
-    shortSummary: "A white mob destroyed the 35-block Greenwood District ('Black Wall Street'), killing 100–300 Black residents.",
-    longDetail: "The violence wiped out an estimated $200 million in generational wealth (2026 dollars) in 18 hours. No reparations have ever been paid.",
-    sourceURL: "#", 
-    isLesserKnown: false, 
-    isEraCard: false
-  },
-  {
-    year: 1922, 
-    title: "Dyer Anti-Lynching Bill Defeated", 
-    category: "Policy", 
-    location: "Washington, DC",
-    shortSummary: "Southern Democrats filibustered a federal law that would have made lynching a federal crime.",
-    longDetail: "This legislative failure guaranteed that lynch mobs would continue to operate with absolute legal immunity for decades.",
-    sourceURL: "#", 
-    isLesserKnown: false, 
-    isEraCard: false
-  },
-  {
-    year: 1923, 
-    title: "Rosewood Massacre", 
-    category: "Violence", 
-    location: "Rosewood, FL",
-    shortSummary: "A white mob destroyed the entire Black town of Rosewood, killing 6–27+ residents.",
-    longDetail: "The thriving Black population was driven permanently from their homes, effectively erasing a prosperous independent economic ecosystem.",
-    sourceURL: "#", 
-    isLesserKnown: false, 
-    isEraCard: false
-  },
-  {
-    year: 1924, 
-    title: "Racial Integrity Act", 
-    category: "Policy", 
-    location: "Virginia",
-    shortSummary: "Virginia passed laws criminalizing interracial marriage and legally erasing Indigenous and Black identities.",
-    longDetail: "A cornerstone of the eugenics movement, explicitly designed to protect 'white racial purity' and codify white supremacy.",
-    sourceURL: "#", 
-    isLesserKnown: false, 
-    isEraCard: false
-  },
-  {
-    year: 1925, 
-    title: "Ossian Sweet Mob Attack", 
-    category: "Violence", 
-    location: "Detroit, MI",
-    shortSummary: "A white mob attacked the home of a Black physician who had moved into a white neighborhood.",
-    longDetail: "Though Sweet successfully defended himself in court, the mob violence enforced intense residential segregation in Northern cities.",
-    sourceURL: "#", 
-    isLesserKnown: false, 
-    isEraCard: false
-  },
-  {
-    year: 1926, 
-    title: "Corrigan v. Buckley", 
-    category: "Policy", 
-    location: "Nationwide",
-    shortSummary: "The Supreme Court validated the use of racially restrictive housing covenants.",
-    longDetail: "This legalized the systemic exclusion of Black Americans from white neighborhoods, cementing the wealth-generating segregation of American cities.",
-    sourceURL: "#", 
-    isLesserKnown: false, 
-    isEraCard: false
-  },
-  {
-    year: 1927, 
-    title: "Little Rock Lynching", 
-    category: "Violence", 
-    location: "Little Rock, AR",
-    shortSummary: "John Carter was lynched, and his body was dragged through the Black business district.",
-    longDetail: "The mob explicitly targeted the Black commercial center to destroy property and inflict maximum psychological terror.",
-    sourceURL: "#", 
-    isLesserKnown: false, 
-    isEraCard: false
-  },
-  {
-    year: 1928, 
-    title: "Great Mississippi Flood Camps", 
-    category: "Financial", 
-    location: "Mississippi Delta",
-    shortSummary: "Black flood victims were forced into concentration camps and forced to work at gunpoint without pay.",
-    longDetail: "Relief funds were systematically diverted to white planters while Black refugees suffered extreme deprivation and abuse.",
-    sourceURL: "#", 
-    isLesserKnown: false, 
-    isEraCard: false
-  },
-  {
-    year: 1929, 
-    title: "Florida Voter Suppression Terror", 
-    category: "Violence", 
-    location: "Florida",
-    shortSummary: "A series of targeted lynchings and beatings of Black organizers ahead of local elections.",
-    longDetail: "Maintained the absolute political dominance of white supremacists in state and local governance.",
-    sourceURL: "#", 
-    isLesserKnown: false, 
-    isEraCard: false
-  },
-  {
-    year: 1930, 
-    title: "Marion Mass Lynching", 
-    category: "Violence", 
-    location: "Marion, IN",
-    shortSummary: "A mob of 10,000 white people lynched Thomas Shipp and Abram Smith.",
-    longDetail: "The photograph of the lynching crowd became one of the most famous images of racial terror, inspiring the song 'Strange Fruit'.",
-    sourceURL: "#", 
-    isLesserKnown: false, 
-    isEraCard: false
-  },
-  {
-    year: 1931, 
-    title: "Scottsboro Boys Arrested", 
-    category: "Policy", 
-    location: "Alabama",
-    shortSummary: "Nine Black teenagers were falsely accused of rape and sentenced to death after sham trials.",
-    longDetail: "The case exposed the complete weaponization of the Southern judicial system to legally lynch Black Americans.",
-    sourceURL: "#", 
-    isLesserKnown: false, 
-    isEraCard: false
-  },
-  {
-    year: 1932, 
-    title: "Tuskegee Syphilis Study Begins", 
-    category: "Policy", 
-    location: "Tuskegee, AL",
-    shortSummary: "The US government began a 40-year experiment deliberately withholding syphilis treatment from Black men.",
-    longDetail: "An egregious medical atrocity that killed dozens, infected families, and generated generations of justified medical distrust.",
-    sourceURL: "#", 
-    isLesserKnown: false, 
-    isEraCard: false
-  },
-  {
-    year: 1933, 
-    title: "Decatur Lynchings", 
-    category: "Violence", 
-    location: "Decatur, AL",
-    shortSummary: "Escalating mob violence surrounding the Scottsboro Boys trials terrorized the local Black community.",
-    longDetail: "Mobs frequently gathered outside the courthouse to guarantee convictions through the threat of mass violence.",
-    sourceURL: "#", 
-    isLesserKnown: false, 
-    isEraCard: false
-  },
-  {
-    year: 1934, 
-    title: "FHA Redlining Begins", 
-    category: "Financial", 
-    location: "Nationwide",
-    shortSummary: "The Federal Housing Administration color-coded Black neighborhoods red, refusing to insure mortgages in those areas.",
-    longDetail: "This guaranteed Black families could not build home equity or access credit, while white families accumulated vast generational wealth.",
-    sourceURL: "#", 
-    isLesserKnown: false, 
-    isEraCard: false
-  },
-  {
-    year: 1935, 
-    title: "Harlem Riot", 
-    category: "Violence", 
-    location: "New York, NY",
-    shortSummary: "A riot erupted after rumors of police brutality against a Black teenager, reflecting deep anger over extreme poverty.",
-    longDetail: "The mayor's own commission cited systemic economic exploitation of Black Harlemites as the root cause, but the report was suppressed.",
-    sourceURL: "#", 
-    isLesserKnown: false, 
-    isEraCard: false
-  },
-  {
-    year: 1936, 
-    title: "Lint River Terror", 
-    category: "Violence", 
-    location: "Georgia",
-    shortSummary: "Coordinated KKK violence against Black sharecroppers demanding fairer wages.",
-    longDetail: "Used to crush any attempts at labor organizing among the most economically exploited workers in the country.",
-    sourceURL: "#", 
-    isLesserKnown: false, 
-    isEraCard: false
-  },
-  {
-    year: 1937, 
-    title: "Marianna Mass Lynching", 
-    category: "Violence", 
-    location: "Marianna, FL",
-    shortSummary: "A white mob tortured and lynched Claude Neal.",
-    longDetail: "The lynching was advertised in newspapers beforehand, drawing thousands of spectators from across state lines.",
-    sourceURL: "#", 
-    isLesserKnown: false, 
-    isEraCard: false
-  },
-  {
-    year: 1938, 
-    title: "Gaines v. Canada Resistance", 
-    category: "Policy", 
-    location: "Missouri",
-    shortSummary: "Despite a SCOTUS ruling ordering the admission of a Black student to law school, states violently resisted.",
-    longDetail: "The plaintiff, Lloyd Gaines, mysteriously disappeared shortly after winning his case and was never found.",
-    sourceURL: "#", 
-    isLesserKnown: false, 
-    isEraCard: false
-  },
-  {
-    year: 1939, 
-    title: "Miami KKK Voter Intimidation", 
-    category: "Violence", 
-    location: "Miami, FL",
-    shortSummary: "The KKK drove through Black neighborhoods with effigies to stop Black residents from voting.",
-    longDetail: "A blatant display of state-tolerated paramilitary force to maintain white political control.",
-    sourceURL: "#", 
-    isLesserKnown: false, 
-    isEraCard: false
-  },
-  {
-    year: 1940, 
-    title: "Lynching of Elbert Williams", 
-    category: "Violence", 
-    location: "Brownsville, TN",
-    shortSummary: "NAACP leader Elbert Williams was lynched for organizing a voter registration drive.",
-    longDetail: "A direct assassination of a political leader designed to crush the local civil rights movement.",
-    sourceURL: "#", 
-    isLesserKnown: false, 
-    isEraCard: false
-  },
-  {
-    year: 1941, 
-    title: "Quincy Lynching", 
-    category: "Violence", 
-    location: "Quincy, FL",
-    shortSummary: "A Black man was lynched with the direct complicity of local law enforcement.",
-    longDetail: "Standard procedure in Jim Crow: police disarmed the victim and handed them to the mob.",
-    sourceURL: "#", 
-    isLesserKnown: false, 
-    isEraCard: false
-  },
-  {
-    year: 1942, 
-    title: "Lynching of Cleo Wright", 
-    category: "Violence", 
-    location: "Sikeston, MO",
-    shortSummary: "A mob dragged Cleo Wright behind a car and burned him in front of a Black church.",
-    longDetail: "The failure of the federal government to prosecute the mob highlighted the impotence of the DOJ in protecting Black lives.",
-    sourceURL: "#", 
-    isLesserKnown: false, 
-    isEraCard: false
-  },
-  {
-    year: 1943, 
-    title: "Detroit & Beaumont Riots", 
-    category: "Violence", 
-    location: "MI & TX",
-    shortSummary: "Massive race riots triggered by white resentment over Black wartime employment and housing.",
-    longDetail: "Federal troops were deployed. The riots proved that white Northern populations would violently resist integration.",
-    sourceURL: "#", 
-    isLesserKnown: false, 
-    isEraCard: false
-  },
-  {
-    year: 1944, 
-    title: "GI Bill Discrimination", 
-    category: "Financial", 
-    location: "Nationwide",
-    shortSummary: "The GI Bill offered subsidized mortgages, but local administration allowed systemic denial to Black veterans.",
-    longDetail: "This policy served as a massive driver of the modern racial wealth gap by excluding millions of Black soldiers from the post-war middle class boom.",
-    sourceURL: "#", 
-    isLesserKnown: false, 
-    isEraCard: false
-  },
-  {
-    year: 1945, 
-    title: "Post-War Police Violence", 
-    category: "Violence", 
-    location: "Nationwide",
-    shortSummary: "Returning Black veterans faced a massive surge in police beatings and lynchings.",
-    longDetail: "White communities responded violently to Black veterans demanding the democracy they had just fought for abroad.",
-    sourceURL: "#", 
-    isLesserKnown: false, 
-    isEraCard: false
-  },
-  {
-    year: 1946, 
-    title: "Moore's Ford Lynching", 
-    category: "Violence", 
-    location: "Monroe, GA",
-    shortSummary: "Two Black couples (one woman 7 months pregnant) were executed at close range by a white mob.",
-    longDetail: "The gruesome massacre prompted President Truman to establish the Committee on Civil Rights, yet no perpetrator was ever convicted.",
-    sourceURL: "#", 
-    isLesserKnown: false, 
-    isEraCard: false
-  },
-  {
-    year: 1947, 
-    title: "Blinding of Isaac Woodard", 
-    category: "Violence", 
-    location: "Batesburg, SC",
-    shortSummary: "A Black WWII veteran was dragged from a bus and beaten blind by a local police chief.",
-    longDetail: "The horrific police brutality drew national outrage and became a catalyst for the modern civil rights movement.",
-    sourceURL: "#", 
-    isLesserKnown: false, 
-    isEraCard: false
-  },
-  {
-    year: 1948, 
-    title: "Assassination of Robert Mallard", 
-    category: "Violence", 
-    location: "Toombs County, GA",
-    shortSummary: "A Black man was ambushed and murdered by the KKK for voting.",
-    longDetail: "His widow was subsequently imprisoned when she attempted to testify against the killers.",
-    sourceURL: "#", 
-    isLesserKnown: false, 
-    isEraCard: false
-  },
-  {
-    year: 1949, 
-    title: "Groveland Boys Framed", 
-    category: "Violence", 
-    location: "Groveland, FL",
-    shortSummary: "Four Black men were framed for rape; a mob burned Black homes and the sheriff executed two of the men.",
-    longDetail: "A textbook case of the justice system and mob violence working in tandem to destroy Black lives.",
-    sourceURL: "#", 
-    isLesserKnown: false, 
-    isEraCard: false
-  },
-  {
-    year: 1950, 
-    title: "Execution of Willie McGee", 
-    category: "Policy", 
-    location: "Mississippi",
-    shortSummary: "A Black man was executed for alleged rape despite international outcry and evidence of a consensual affair.",
-    longDetail: "Highlighted the deeply racist application of the death penalty, used as a legalized form of lynching.",
-    sourceURL: "#", 
-    isLesserKnown: false, 
-    isEraCard: false
-  },
-  {
-    year: 1951, 
-    title: "Assassination of Harry T. Moore", 
-    category: "Violence", 
-    location: "Mims, FL",
-    shortSummary: "The NAACP director and his wife were murdered when their home was bombed on Christmas night.",
-    longDetail: "Moore was targeted for his voter registration drives and investigations into lynchings. No one was ever charged.",
-    sourceURL: "#", 
-    isLesserKnown: false, 
-    isEraCard: false
-  },
-  {
-    year: 1952, 
-    title: "Florida KKK Bombings", 
-    category: "Violence", 
-    location: "Florida",
-    shortSummary: "A massive wave of KKK bombings targeted Black homes, Jewish centers, and Catholic churches.",
-    longDetail: "Terrorists used dynamite to enforce housing segregation and intimidate civil rights activists.",
-    sourceURL: "#", 
-    isLesserKnown: false, 
-    isEraCard: false
-  },
-  {
-    year: 1953, 
-    title: "Baton Rouge Bus Boycott", 
-    category: "Policy", 
-    location: "Louisiana",
-    shortSummary: "Black residents successfully boycotted segregated buses, facing severe police intimidation.",
-    longDetail: "The blueprint for the Montgomery Bus Boycott two years later.",
-    sourceURL: "#", 
-    isLesserKnown: false, 
-    isEraCard: false
-  },
-  {
-    year: 1954, 
-    title: "White Citizens' Councils Formed", 
-    category: "Policy", 
-    location: "South",
-    shortSummary: "In response to Brown v. Board, prominent white politicians formed councils to economically destroy Black activists.",
-    longDetail: "They weaponized banks and employers to fire, evict, and deny credit to anyone supporting civil rights.",
-    sourceURL: "#", 
-    isLesserKnown: false, 
-    isEraCard: false
-  },
-  {
-    year: 1955, 
-    title: "Lynching of Emmett Till", 
-    category: "Violence", 
-    location: "Money, MS",
-    shortSummary: "A 14-year-old boy was brutally tortured and murdered for allegedly whistling at a white woman.",
-    longDetail: "The open-casket funeral exposed the absolute barbarity of white supremacy to the world. His killers were acquitted.",
-    sourceURL: "#", 
-    isLesserKnown: false, 
-    isEraCard: false
-  },
-  {
-    year: 1956, 
-    title: "Federal Highway Act", 
-    category: "Financial", 
-    location: "Nationwide",
-    shortSummary: "The Interstate Highway System was deliberately routed through prosperous Black neighborhoods.",
-    longDetail: "This destroyed hundreds of Black business districts and homes, a policy known in the community as 'Negro removal'.",
-    sourceURL: "#", 
-    isLesserKnown: false, 
-    isEraCard: false
-  },
-  {
-    year: 1957, 
-    title: "Little Rock Nine Mob Violence", 
-    category: "Violence", 
-    location: "Little Rock, AR",
-    shortSummary: "Vicious white mobs attacked Black students attempting to integrate Central High School.",
-    longDetail: "President Eisenhower had to deploy the 101st Airborne Division to prevent the children from being murdered by the mob.",
-    sourceURL: "#", 
-    isLesserKnown: false, 
-    isEraCard: false
-  },
-  {
-    year: 1958, 
-    title: "Bombing of Bethel Baptist Church", 
-    category: "Violence", 
-    location: "Birmingham, AL",
-    shortSummary: "White supremacists bombed the church of civil rights leader Fred Shuttlesworth.",
-    longDetail: "One of dozens of bombings in Birmingham, earning the city the nickname 'Bombingham'.",
-    sourceURL: "#", 
-    isLesserKnown: false, 
-    isEraCard: false
-  },
-  {
-    year: 1959, 
-    title: "Lynching of Mack Charles Parker", 
-    category: "Violence", 
-    location: "Poplarville, MS",
-    shortSummary: "A mob dragged Parker from his jail cell, beat him, and threw his body in the Pearl River.",
-    longDetail: "The FBI identified the killers, but a local grand jury refused to indict them, proving the continued complicity of the legal system.",
-    sourceURL: "#", 
-    isLesserKnown: false, 
-    isEraCard: false
-  },
-  {
-    year: 1960, 
-    title: "Ax Handle Saturday", 
-    category: "Violence", 
-    location: "Jacksonville, FL",
-    shortSummary: "A white mob of 200 men armed with baseball bats and ax handles attacked Black youth conducting a sit-in.",
-    longDetail: "Police stood by and watched until Black residents began to fight back, at which point police arrested the Black victims.",
-    sourceURL: "#", 
-    isLesserKnown: false, 
-    isEraCard: false
-  },
-  {
-    year: 1961, 
-    title: "Freedom Riders Firebombed", 
-    category: "Violence", 
-    location: "Anniston, AL",
-    shortSummary: "A KKK mob firebombed a bus of civil rights workers and held the doors shut to burn them alive.",
-    longDetail: "When the riders escaped the inferno, the mob beat them with iron pipes. Local police conspired with the Klan.",
-    sourceURL: "#", 
-    isLesserKnown: false, 
-    isEraCard: false
-  },
-  {
-    year: 1962, 
-    title: "Ole Miss Riot", 
-    category: "Violence", 
-    location: "Oxford, MS",
-    shortSummary: "A deadly riot erupted when white segregationists tried to prevent James Meredith from enrolling at the University of Mississippi.",
-    longDetail: "Two people were killed and hundreds injured before federal troops quelled the white supremacist uprising.",
-    sourceURL: "#", 
-    isLesserKnown: false, 
-    isEraCard: false
-  },
-  {
-    year: 1963, 
-    title: "Birmingham Church Bombing", 
-    category: "Violence", 
-    location: "Birmingham, AL",
-    shortSummary: "Ku Klux Klan members bombed the 16th Street Baptist Church, killing four Black girls.",
-    longDetail: "The explicit act of terrorism shocked the nation, horrified the world, and accelerated passage of the Civil Rights Act of 1964.",
-    sourceURL: "#", 
-    isLesserKnown: false, 
-    isEraCard: false
-  },
-  {
-    year: 1964, 
-    title: "Murders of Chaney, Goodman, Schwerner", 
-    category: "Violence", 
-    location: "Philadelphia, MS",
-    shortSummary: "Klan members, including law enforcement, abducted and murdered three civil rights workers.",
-    longDetail: "The brutal assassinations galvanized the civil rights movement. State murder charges against the perpetrators were not filed until 2005.",
-    sourceURL: "#", 
-    isLesserKnown: false, 
-    isEraCard: false
-  },
-  {
-    year: 1965, 
-    title: "Bloody Sunday & Watts Uprising", 
-    category: "Violence", 
-    location: "AL & CA",
-    shortSummary: "Police brutally beat marchers in Selma; months later, systemic police abuse triggered a massive uprising in LA.",
-    longDetail: "Exposed the twin realities of Southern state-sanctioned violence and Northern systemic police brutality and poverty.",
-    sourceURL: "#", 
-    isLesserKnown: false, 
-    isEraCard: false
-  },
-  {
-    year: 1966, 
-    title: "Assassination of Vernon Dahmer", 
-    category: "Violence", 
-    location: "Hattiesburg, MS",
-    shortSummary: "The KKK firebombed the home of a Black civil rights leader who offered to pay poll taxes for Black voters.",
-    longDetail: "Dahmer died defending his family from the flames. His murder was orchestrated by the KKK Imperial Wizard.",
-    sourceURL: "#", 
-    isLesserKnown: false, 
-    isEraCard: false
-  },
-  {
-    year: 1967, 
-    title: "Detroit & Newark Uprisings", 
-    category: "Violence", 
-    location: "MI & NJ",
-    shortSummary: "Police brutality and extreme economic deprivation sparked the deadliest urban uprisings in modern US history.",
-    longDetail: "The Kerner Commission warned that America was moving toward two societies, one black, one white—separate and unequal.",
-    sourceURL: "#", 
-    isLesserKnown: false, 
-    isEraCard: false
-  },
-  {
-    year: 1968, 
-    title: "MLK Assassination & Orangeburg Massacre", 
-    category: "Violence", 
-    location: "TN & SC",
-    shortSummary: "Dr. King was assassinated, and police gunned down Black students in SC.",
-    longDetail: "King's murder sparked uprisings in 100+ cities, resulting in massive military deployment and decades of white flight and urban disinvestment.",
-    sourceURL: "#", 
-    isLesserKnown: false, 
-    isEraCard: false
-  },
-  {
-    year: 1969, 
-    title: "Assassination of Fred Hampton", 
-    category: "Violence", 
-    location: "Chicago, IL",
-    shortSummary: "Chicago police, coordinated by the FBI's COINTELPRO, assassinated the 21-year-old Black Panther leader in his bed.",
-    longDetail: "A deliberate, state-sponsored execution designed to prevent the rise of a unifying Black political leader.",
-    sourceURL: "#", 
-    isLesserKnown: false, 
-    isEraCard: false
-  },
-  {
-    year: 1970, 
-    title: "Jackson State Killings", 
-    category: "Violence", 
-    location: "Jackson, MS",
-    shortSummary: "State police fired 460 rounds into a women's dormitory at a Black college, killing 2 students.",
-    longDetail: "Occurred days after Kent State, but received vastly less national outrage, reflecting biases in the valuation of Black life.",
-    sourceURL: "#", 
-    isLesserKnown: false, 
-    isEraCard: false
-  },
-  {
-    year: 1971, 
-    title: "War on Drugs Declared", 
-    category: "Policy", 
-    location: "Nationwide",
-    shortSummary: "Explicitly designed to target Black communities, the policy fueled mass incarceration and destroyed families.",
-    longDetail: "Black Americans were subsequently arrested and imprisoned at 3-4x the rate of white Americans despite similar drug usage rates.",
-    sourceURL: "#", 
-    isLesserKnown: false, 
-    isEraCard: false
-  },
-  {
-    year: 1972, 
-    title: "Southern University Shootings", 
-    category: "Violence", 
-    location: "Baton Rouge, LA",
-    shortSummary: "Police shot and killed two Black students during a protest over campus funding and resources.",
-    longDetail: "Another example of lethal state violence deployed against Black students demanding equal educational rights.",
-    sourceURL: "#", 
-    isLesserKnown: false, 
-    isEraCard: false
-  },
-  {
-    year: 1973, 
-    title: "Murder of Santos Rodriguez", 
-    category: "Violence", 
-    location: "Dallas, TX",
-    shortSummary: "A Dallas police officer played Russian roulette with a 12-year-old boy's head during an interrogation, killing him.",
-    longDetail: "The officer served just two and a half years in prison, highlighting the profound lack of accountability for police violence.",
-    sourceURL: "#", 
-    isLesserKnown: false, 
-    isEraCard: false
-  },
-  {
-    year: 1974, 
-    title: "Boston Busing Riots", 
-    category: "Violence", 
-    location: "Boston, MA",
-    shortSummary: "Violent white mobs attacked school buses carrying Black children to enforce de facto segregation.",
-    longDetail: "Proved that violent, organized resistance to school integration was a Northern phenomenon as much as a Southern one.",
-    sourceURL: "#", 
-    isLesserKnown: false, 
-    isEraCard: false
-  },
-  {
-    year: 1975, 
-    title: "Escambia County Jail Fire", 
-    category: "Violence", 
-    location: "Florida",
-    shortSummary: "A preventable jail fire killed 14 Black men after guards ignored their pleas for help.",
-    longDetail: "Highlighted the lethal negligence and profound racism embedded within the burgeoning mass incarceration system.",
-    sourceURL: "#", 
-    isLesserKnown: false, 
-    isEraCard: false
-  },
-  {
-    year: 1976, 
-    title: "Reinstatement of the Death Penalty", 
-    category: "Policy", 
-    location: "Nationwide",
-    shortSummary: "The Supreme Court reinstated the death penalty (Gregg v. Georgia).",
-    longDetail: "The system immediately resumed its historic pattern: Black defendants, especially those accused of killing white victims, were disproportionately sentenced to die.",
-    sourceURL: "#", 
-    isLesserKnown: false, 
-    isEraCard: false
-  },
-  {
-    year: 1977, 
-    title: "The Dawson Five Arrests", 
-    category: "Policy", 
-    location: "Georgia",
-    shortSummary: "Five Black youths were coerced through police torture and threats of electrocution into confessing to murder.",
-    longDetail: "Though eventually cleared, the case exposed the routine use of police torture to secure false convictions against Black Americans.",
-    sourceURL: "#", 
-    isLesserKnown: false, 
-    isEraCard: false
-  },
-  {
-    year: 1978, 
-    title: "Killing of Arthur Miller", 
-    category: "Violence", 
-    location: "Brooklyn, NY",
-    shortSummary: "A Black community leader was choked to death by NYPD officers.",
-    longDetail: "A precursor to the Eric Garner and George Floyd murders, demonstrating a long history of lethal police chokeholds.",
-    sourceURL: "#", 
-    isLesserKnown: false, 
-    isEraCard: false
-  },
-  {
-    year: 1979, 
-    title: "Greensboro Massacre", 
-    category: "Violence", 
-    location: "Greensboro, NC",
-    shortSummary: "KKK and neo-Nazi members assassinated 5 labor organizers in broad daylight on camera.",
-    longDetail: "Despite video evidence, all-white juries acquitted the shooters, proving that violent white supremacy still enjoyed systemic legal protection.",
-    sourceURL: "#", 
-    isLesserKnown: false, 
-    isEraCard: false
-  },
-  {
-    year: 1980, 
-    title: "Miami Riots", 
-    category: "Violence", 
-    location: "Miami, FL",
-    shortSummary: "Police officers beat Black insurance executive Arthur McDuffie to death and were acquitted.",
-    longDetail: "The acquittals sparked massive uprisings, resulting in 18 deaths and $100 million in property damage.",
-    sourceURL: "#", 
-    isLesserKnown: false, 
-    isEraCard: false
-  },
-  {
-    year: 1981, 
-    title: "Lynching of Michael Donald", 
-    category: "Violence", 
-    location: "Mobile, AL",
-    shortSummary: "KKK members abducted, murdered, and hung a 19-year-old Black man from a tree.",
-    longDetail: "One of the last 'classic' lynchings in America. A subsequent lawsuit by his mother bankrupt the United Klans of America.",
-    sourceURL: "#", 
-    isLesserKnown: false, 
-    isEraCard: false
-  },
-  {
-    year: 1982, 
-    title: "Voting Rights Act Weakened", 
-    category: "Policy", 
-    location: "Nationwide",
-    shortSummary: "The DOJ fundamentally shifted its civil rights enforcement, backing away from desegregation and voting protection.",
-    longDetail: "This era marked a sharp conservative rollback of the civil rights gains of the 1960s.",
-    sourceURL: "#", 
-    isLesserKnown: false, 
-    isEraCard: false
-  },
-  {
-    year: 1983, 
-    title: "Killing of Michael Stewart", 
-    category: "Violence", 
-    location: "New York, NY",
-    shortSummary: "A 25-year-old Black artist was beaten to death by transit police for writing graffiti.",
-    longDetail: "All officers involved were acquitted, reinforcing the unwritten rule of police immunity in cases of Black death.",
-    sourceURL: "#", 
-    isLesserKnown: false, 
-    isEraCard: false
-  },
-  {
-    year: 1984, 
-    title: "Killing of Eleanor Bumpurs", 
-    category: "Violence", 
-    location: "New York, NY",
-    shortSummary: "NYPD officers shot and killed a 66-year-old Black woman during an eviction over $98 in unpaid rent.",
-    longDetail: "Highlighting the lethal intersection of poverty, housing insecurity, and hyper-aggressive policing.",
-    sourceURL: "#", 
-    isLesserKnown: false, 
-    isEraCard: false
-  },
-  {
-    year: 1985, 
-    title: "MOVE Bombing", 
-    category: "Violence", 
-    location: "Philadelphia, PA",
-    shortSummary: "Police dropped a military-grade bomb on a Black liberation group's home, killing 11 people including 5 children.",
-    longDetail: "The resulting fire was deliberately allowed to burn, destroying 65 homes. No police officer or city official was ever criminally charged.",
-    sourceURL: "#", 
-    isLesserKnown: false, 
-    isEraCard: false
-  },
-  {
-    year: 1986, 
-    title: "Howard Beach Incident", 
-    category: "Violence", 
-    location: "Queens, NY",
-    shortSummary: "A white mob chased a Black man, Michael Griffith, onto a highway where he was struck and killed by a car.",
-    longDetail: "The mob violence in New York City proved that visceral, deadly racism was thriving in the urban North.",
-    sourceURL: "#", 
-    isLesserKnown: false, 
-    isEraCard: false
-  },
-  {
-    year: 1987, 
-    title: "Forsyth County March Attacked", 
-    category: "Violence", 
-    location: "Cumming, GA",
-    shortSummary: "Civil rights marchers were attacked by thousands of Klansmen in a county that violently expelled its Black population in 1912.",
-    longDetail: "The massive white supremacist mobilization showed how deeply entrenched violent racism remained in the modern era.",
-    sourceURL: "#", 
-    isLesserKnown: false, 
-    isEraCard: false
-  },
-  {
-    year: 1988, 
-    title: "Anti-Drug Abuse Act", 
-    category: "Policy", 
-    location: "Nationwide",
-    shortSummary: "Established the 100-to-1 sentencing disparity between crack and powder cocaine.",
-    longDetail: "This explicitly racist legislation fueled an explosion in the mass incarceration of Black Americans, devastating families and wealth.",
-    sourceURL: "#", 
-    isLesserKnown: false, 
-    isEraCard: false
-  },
-  {
-    year: 1989, 
-    title: "Virginia Beach Riot", 
-    category: "Violence", 
-    location: "Virginia Beach, VA",
-    shortSummary: "Police clashed violently with Black college students attending the Greekfest event.",
-    longDetail: "The aggressive, militarized police response to Black students contrasted sharply with the tolerance shown to white spring breakers.",
-    sourceURL: "#", 
-    isLesserKnown: false, 
-    isEraCard: false
-  },
-  {
-    year: 1990, 
-    title: "Charles Stuart Hoax", 
-    category: "Violence", 
-    location: "Boston, MA",
-    shortSummary: "A white man murdered his wife and blamed a 'Black mugger', prompting a brutal police siege of Black neighborhoods.",
-    longDetail: "Police terrorized innocent Black men based on a complete fabrication, demonstrating how easily white lies mobilized state violence.",
-    sourceURL: "#", 
-    isLesserKnown: false, 
-    isEraCard: false
-  },
-  {
-    year: 1991, 
-    title: "Rodney King Beating", 
-    category: "Violence", 
-    location: "Los Angeles, CA",
-    shortSummary: "Four LAPD officers were caught on video brutally beating Rodney King.",
-    longDetail: "The video confirmed what Black communities had reported for decades: sadistic, systemic police violence was standard operating procedure.",
-    sourceURL: "#", 
-    isLesserKnown: false, 
-    isEraCard: false
-  },
-  {
-    year: 1992, 
-    title: "Los Angeles Uprising", 
-    category: "Violence", 
-    location: "Los Angeles, CA",
-    shortSummary: "The acquittal of the officers who beat Rodney King sparked 6 days of uprisings, resulting in 63 deaths and $1B in damage.",
-    longDetail: "The most destructive civil unrest in US history, fueled by decades of police abuse and economic redlining in South LA.",
-    sourceURL: "#", 
-    isLesserKnown: false, 
-    isEraCard: false
-  },
-  {
-    year: 1993, 
-    title: "Killing of Malice Green Trial", 
-    category: "Violence", 
-    location: "Detroit, MI",
-    shortSummary: "Two police officers were convicted of beating a Black motorist to death with flashlights.",
-    longDetail: "A rare conviction that nevertheless highlighted the horrific, routine violence inflicted during minor traffic stops.",
-    sourceURL: "#", 
-    isLesserKnown: false, 
-    isEraCard: false
-  },
-  {
-    year: 1994, 
-    title: "1994 Crime Bill", 
-    category: "Policy", 
-    location: "Nationwide",
-    shortSummary: "Passed the 'Three Strikes' law and funded massive prison expansion.",
-    longDetail: "This legislation turbocharged the mass incarceration of Black Americans, stripping millions of men from their communities and the economy.",
-    sourceURL: "#", 
-    isLesserKnown: false, 
-    isEraCard: false
-  },
-  {
-    year: 1995, 
-    title: "Jon Burge Torture Ring Exposed", 
-    category: "Violence", 
-    location: "Chicago, IL",
-    shortSummary: "Investigations revealed a Chicago police commander ran a torture ring, electrocuting and burning dozens of Black suspects.",
-    longDetail: "The city spent millions defending the torture and millions more settling lawsuits; Burge served only a few years for perjury.",
-    sourceURL: "#", 
-    isLesserKnown: false, 
-    isEraCard: false
-  },
-  {
-    year: 1996, 
-    title: "St. Petersburg Unrest", 
-    category: "Violence", 
-    location: "St. Petersburg, FL",
-    shortSummary: "Riots broke out after police shot and killed an unarmed Black teenager during a traffic stop.",
-    longDetail: "Another in an endless cycle of lethal police violence triggering community uprisings and subsequent economic damage.",
-    sourceURL: "#", 
-    isLesserKnown: false, 
-    isEraCard: false
-  },
-  {
-    year: 1997, 
-    title: "Torture of Abner Louima", 
-    category: "Violence", 
-    location: "New York, NY",
-    shortSummary: "NYPD officers brutally sodomized and tortured a Haitian immigrant in a police precinct bathroom.",
-    longDetail: "A horrific demonstration of sadistic police violence and the 'blue wall of silence' that attempted to cover it up.",
-    sourceURL: "#", 
-    isLesserKnown: false, 
-    isEraCard: false
-  },
-  {
-    year: 1998, 
-    title: "Lynching of James Byrd Jr.", 
-    category: "Violence", 
-    location: "Jasper, TX",
-    shortSummary: "Three white supremacists dragged a Black man to death behind a pickup truck.",
-    longDetail: "A modern-day lynching that shocked the world and eventually led to the passage of federal hate crime legislation.",
-    sourceURL: "#", 
-    isLesserKnown: false, 
-    isEraCard: false
-  },
-  {
-    year: 1999, 
-    title: "Killing of Amadou Diallo", 
-    category: "Violence", 
-    location: "New York, NY",
-    shortSummary: "Four plainclothes NYPD officers fired 41 shots at an unarmed African immigrant holding a wallet.",
-    longDetail: "All officers were acquitted. The '41 shots' became a rallying cry against racial profiling and aggressive policing tactics.",
-    sourceURL: "#", 
-    isLesserKnown: false, 
-    isEraCard: false
-  },
-  {
-    year: 2000, 
-    title: "Killing of Patrick Dorismond", 
-    category: "Violence", 
-    location: "New York, NY",
-    shortSummary: "An unarmed Black security guard was shot and killed by an undercover NYPD officer who approached him for drugs.",
-    longDetail: "The mayor subsequently released Dorismond's juvenile record to smear him, a common tactic used to justify the state killing of Black men.",
-    sourceURL: "#", 
-    isLesserKnown: false, 
-    isEraCard: false
-  },
-  {
-    year: 2001, 
-    title: "Cincinnati Riots", 
-    category: "Violence", 
-    location: "Cincinnati, OH",
-    shortSummary: "The police killing of Timothy Thomas (the 15th Black man killed by police in 5 years) sparked days of unrest.",
-    longDetail: "Led to a landmark collaborative agreement for police reform, though systemic economic issues remained unaddressed.",
-    sourceURL: "#", 
-    isLesserKnown: false, 
-    isEraCard: false
-  },
-  {
-    year: 2002, 
-    title: "Systemic Disenfranchisement Tactics", 
-    category: "Policy", 
-    location: "Nationwide",
-    shortSummary: "Following the 2000 election, states began implementing new, restrictive voter ID laws and purging voter rolls.",
-    longDetail: "These policies disproportionately targeted and removed Black voters from the democratic process under the guise of 'fraud prevention'.",
-    sourceURL: "#", 
-    isLesserKnown: false, 
-    isEraCard: false
-  },
-  {
-    year: 2003, 
-    title: "Benton Harbor Uprising", 
-    category: "Violence", 
-    location: "Benton Harbor, MI",
-    shortSummary: "The death of a Black motorcyclist during a police chase sparked unrest in a deeply impoverished, segregated city.",
-    longDetail: "Highlighting the explosive tension in deindustrialized, redlined Midwestern cities suffering from aggressive policing.",
-    sourceURL: "#", 
-    isLesserKnown: false, 
-    isEraCard: false
-  },
-  {
-    year: 2004, 
-    title: "Killing of Ousmane Zongo", 
-    category: "Violence", 
-    location: "New York, NY",
-    shortSummary: "An unarmed African immigrant was shot four times by a plainclothes NYPD officer during a raid he had nothing to do with.",
-    longDetail: "Another instance of lethal negligence and racial profiling resulting in the death of an innocent Black man.",
-    sourceURL: "#", 
-    isLesserKnown: false, 
-    isEraCard: false
-  },
-  {
-    year: 2005, 
-    title: "Hurricane Katrina Systematic Abandonment", 
-    category: "Financial", 
-    location: "New Orleans, LA",
-    shortSummary: "Federal levees failed, flooding predominantly Black neighborhoods; the government response was catastrophically slow.",
-    longDetail: "FEMA abandoned tens of thousands of Black residents. The recovery funds largely bypassed Black homeowners, permanently altering the city's demographics.",
-    sourceURL: "#", 
-    isLesserKnown: false, 
-    isEraCard: false
-  },
-  {
-    year: 2006, 
-    title: "Killing of Sean Bell", 
-    category: "Violence", 
-    location: "New York, NY",
-    shortSummary: "NYPD officers fired 50 shots into a car on the morning of Bell's wedding, killing him.",
-    longDetail: "The officers were acquitted of all charges. The 50 shots became another grim milestone in the history of excessive police force.",
-    sourceURL: "#", 
-    isLesserKnown: false, 
-    isEraCard: false
-  },
-  {
-    year: 2007, 
-    title: "The Jena Six Arrests", 
-    category: "Policy", 
-    location: "Jena, LA",
-    shortSummary: "Six Black teenagers were charged with attempted murder for a schoolyard fight, while white students who hung nooses faced no charges.",
-    longDetail: "The extreme overcharging exposed the massive racial double standard in the American criminal justice system.",
-    sourceURL: "#", 
-    isLesserKnown: false, 
-    isEraCard: false
-  },
-  {
-    year: 2008, 
-    title: "Subprime Mortgage Crisis", 
-    category: "Financial", 
-    location: "Nationwide",
-    shortSummary: "Major banks systematically steered Black homeowners into predatory subprime loans known internally as 'ghetto loans.'",
-    longDetail: "The predatory targeting caused Black homeowners to lose $194 billion in home equity, effectively erasing 40 years of Black economic progress.",
-    sourceURL: "#", 
-    isLesserKnown: false, 
-    isEraCard: false
-  },
-  {
-    year: 2009, 
-    title: "Killing of Oscar Grant", 
-    category: "Violence", 
-    location: "Oakland, CA",
-    shortSummary: "A transit police officer shot an unarmed Black man in the back while he lay face down on a train platform.",
-    longDetail: "The execution was captured on multiple cell phones, ushering in the modern era of viral videos exposing police killings.",
-    sourceURL: "#", 
-    isLesserKnown: false, 
-    isEraCard: false
-  },
-  {
-    year: 2010, 
-    title: "Killing of Aiyana Stanley-Jones", 
-    category: "Violence", 
-    location: "Detroit, MI",
-    shortSummary: "A 7-year-old Black girl was shot in the head while sleeping during a militarized police raid filmed for a reality TV show.",
-    longDetail: "The officer responsible was never convicted, showcasing the lethal consequences of the militarization of local police.",
-    sourceURL: "#", 
-    isLesserKnown: false, 
-    isEraCard: false
-  },
-  {
-    year: 2011, 
-    title: "Killing of Kenneth Chamberlain", 
-    category: "Violence", 
-    location: "White Plains, NY",
-    shortSummary: "Police responding to a medical alert pendant broke down a 68-year-old Black veteran's door and shot him to death.",
-    longDetail: "Officers used racial slurs during the breach. No federal charges were ever filed.",
-    sourceURL: "#", 
-    isLesserKnown: false, 
-    isEraCard: false
-  },
-  {
-    year: 2012, 
-    title: "Murder of Trayvon Martin", 
-    category: "Violence", 
-    location: "Sanford, FL",
-    shortSummary: "An unarmed Black teenager was profiled, stalked, and murdered by a neighborhood watch vigilante.",
-    longDetail: "The killer's acquittal sparked the Black Lives Matter movement and highlighted how 'Stand Your Ground' laws protect white violence.",
-    sourceURL: "#", 
-    isLesserKnown: false, 
-    isEraCard: false
-  },
-  {
-    year: 2013, 
-    title: "Shelby County v. Holder", 
-    category: "Policy", 
-    location: "Nationwide",
-    shortSummary: "The Supreme Court gutted the Voting Rights Act of 1965, removing federal preclearance for voting changes.",
-    longDetail: "Within 24 hours, states previously restricted for racial discrimination implemented harsh new voter ID laws and closed polling places in Black communities.",
-    sourceURL: "#", 
-    isLesserKnown: false, 
-    isEraCard: false
-  },
-  {
-    year: 2014, 
-    title: "Ferguson Uprising & Eric Garner", 
-    category: "Violence", 
-    location: "MO & NY",
-    shortSummary: "The police killings of Michael Brown and Eric Garner sparked nationwide uprisings against police impunity.",
-    longDetail: "Garner's plea of 'I can't breathe' and Brown's body left in the street for four hours became symbols of the devaluation of Black life.",
-    sourceURL: "#", 
-    isLesserKnown: false, 
-    isEraCard: false
-  },
-  {
-    year: 2015, 
-    title: "Charleston Church Massacre", 
-    category: "Violence", 
-    location: "Charleston, SC",
-    shortSummary: "A white supremacist murdered 9 Black worshippers at Mother Emanuel AME Church during Bible study.",
-    longDetail: "The attack was a direct act of racial terrorism designed specifically to ignite a modern race war, echoing historical patterns of violence.",
-    sourceURL: "#", 
-    isLesserKnown: false, 
-    isEraCard: false
-  },
-  {
-    year: 2016, 
-    title: "Killings of Philando Castile & Alton Sterling", 
-    category: "Violence", 
-    location: "MN & LA",
-    shortSummary: "Two Black men were executed by police at point-blank range, both captured on horrific viral videos.",
-    longDetail: "Despite crystal-clear video evidence, the legal system failed to hold the officers fully accountable, driving further despair and protests.",
-    sourceURL: "#", 
-    isLesserKnown: false, 
-    isEraCard: false
-  },
-  {
-    year: 2017, 
-    title: "Charlottesville Unite the Right Rally", 
-    category: "Violence", 
-    location: "Charlottesville, VA",
-    shortSummary: "White nationalists carrying torches chanted Nazi slogans; a neo-Nazi drove a car into counter-protesters, killing one.",
-    longDetail: "The rally marked a terrifying mainstream resurgence of overt white supremacist organizing and violence.",
-    sourceURL: "#", 
-    isLesserKnown: false, 
-    isEraCard: false
-  },
-  {
-    year: 2018, 
-    title: "Killing of Stephon Clark", 
-    category: "Violence", 
-    location: "Sacramento, CA",
-    shortSummary: "Police shot an unarmed Black man 20 times in his grandmother's backyard, claiming his cell phone was a gun.",
-    longDetail: "No officers were charged. The incident underscored how the legal threshold of 'officer fear' essentially legalizes the murder of Black citizens.",
-    sourceURL: "#", 
-    isLesserKnown: false, 
-    isEraCard: false
-  },
-  {
-    year: 2019, 
-    title: "Killing of Atatiana Jefferson", 
-    category: "Violence", 
-    location: "Fort Worth, TX",
-    shortSummary: "A police officer shot a Black woman through her bedroom window while responding to a non-emergency welfare check.",
-    longDetail: "Another tragic death of a Black citizen within the presumed safety of their own home at the hands of law enforcement.",
-    sourceURL: "#", 
-    isLesserKnown: false, 
-    isEraCard: false
-  },
-  {
-    year: 2020, 
-    title: "Murder of George Floyd & COVID Wealth Transfer", 
-    category: "Violence", 
-    location: "Nationwide",
-    shortSummary: "A police officer knelt on George Floyd's neck for 9 minutes, sparking the largest protest movement in US history.",
-    longDetail: "Simultaneously, COVID-19 disproportionately killed Black Americans and decimated Black-owned businesses due to systemic health and financial inequities.",
-    sourceURL: "#", 
-    isLesserKnown: false, 
-    isEraCard: false
-  },
-  {
-    year: 2021, 
-    title: "Voter Suppression Wave", 
-    category: "Policy", 
-    location: "Nationwide",
-    shortSummary: "Following high Black voter turnout in 2020, 19 states passed 34 laws restricting access to voting.",
-    longDetail: "A modern manifestation of historical disenfranchisement tactics, targeting mail-in voting and criminalizing giving water to voters in line.",
-    sourceURL: "#", 
-    isLesserKnown: false, 
-    isEraCard: false
-  },
-  {
-    year: 2022, 
-    title: "Buffalo Supermarket Massacre", 
-    category: "Violence", 
-    location: "Buffalo, NY",
-    shortSummary: "A white supremacist deliberately drove to a predominantly Black neighborhood and murdered 10 Black shoppers.",
-    longDetail: "The shooter published a manifesto citing the 'Great Replacement' theory, connecting modern internet radicalization to historic racial terror.",
-    sourceURL: "#", 
-    isLesserKnown: false, 
-    isEraCard: false
-  },
-  {
-    year: 2023, 
-    title: "Affirmative Action Struck Down", 
-    category: "Policy", 
-    location: "Nationwide",
-    shortSummary: "The Supreme Court struck down affirmative action in college admissions.",
-    longDetail: "The ruling effectively dismantled decades of policy designed to offset the historical exclusion of Black Americans from elite educational and economic networks.",
-    sourceURL: "#", 
-    isLesserKnown: false, 
-    isEraCard: false
-  },
-  {
-    year: 2024, 
-    title: "Dismantling of DEI Programs", 
-    category: "Policy", 
-    location: "Nationwide",
-    shortSummary: "A coordinated legal and political campaign outlawed Diversity, Equity, and Inclusion programs across corporate and academic America.",
-    longDetail: "This accelerated the reversal of economic and professional gains made by Black Americans, halting efforts to close the wealth gap.",
-    sourceURL: "#", 
-    isLesserKnown: false, 
-    isEraCard: false
-  },
-  {
-    year: 2025, 
-    title: "Mass Pardon Denials", 
-    category: "Policy", 
-    location: "Nationwide",
-    shortSummary: "Efforts to posthumously pardon Black victims of sham Jim Crow trials faced massive political resistance and denial.",
-    longDetail: "Highlighting the ongoing refusal of state governments to fully acknowledge or rectify historical judicial lynchings.",
-    sourceURL: "#", 
-    isLesserKnown: false, 
-    isEraCard: false
-  },
-  {
-    year: 2026, 
-    title: "The Persistent Wealth Gap", 
-    category: "Financial", 
-    location: "Nationwide",
-    shortSummary: "161 years after emancipation, the median Black family still holds roughly 15 cents for every dollar of white family wealth.",
-    longDetail: "Despite generations of labor and civil rights struggles, the systemic extraction of wealth via redlining, mass incarceration, and policy remains entirely unrectified.",
-    sourceURL: "#", 
-    isLesserKnown: false, 
-    isEraCard: false
-  },
-];;
+    "year": 1865,
+    "title": "Black Codes Enacted",
+    "category": "Policy",
+    "location": "Nationwide",
+    "shortSummary": "Southern states passed laws effectively re-enslaving Black people through vagrancy laws and labor contracts.",
+    "longDetail": "Any Black person without proof of employment could be arrested and leased out as a convict laborer. This legally enforced the initial post-slavery wealth gap."
+  },
+  {
+    "year": 1866,
+    "title": "Memphis & New Orleans Massacres",
+    "category": "Violence",
+    "location": "TN & LA",
+    "shortSummary": "White mobs and police slaughtered dozens of Black residents and Union veterans in two major cities.",
+    "longDetail": "These massacres were deliberate attempts to crush Black political enfranchisement and economic independence right after the Civil War.",
+    "deaths": "80+",
+    "impact": "Dozens of Black-owned businesses and schools burned."
+  },
+  {
+    "year": 1867,
+    "title": "Ku Klux Klan Expansion",
+    "category": "Violence",
+    "location": "South",
+    "shortSummary": "The KKK grew into a mass paramilitary force across the South.",
+    "longDetail": "Their explicit purpose was the assassination of Black political leaders, teachers, and landowners to maintain white supremacy."
+  },
+  {
+    "year": 1868,
+    "title": "Opelousas & Camilla Massacres",
+    "category": "Violence",
+    "location": "LA & GA",
+    "shortSummary": "Paramilitaries murdered over 200 Black voters across two major massacres.",
+    "longDetail": "Designed to overthrow Republican governance. It remains almost entirely unknown despite a death toll matching America's worst catastrophes.",
+    "deaths": "212+",
+    "impact": "Total suppression of the local Black vote."
+  },
+  {
+    "year": 1869,
+    "title": "Georgia Legislature Expulsions",
+    "category": "Policy",
+    "location": "Atlanta, GA",
+    "shortSummary": "The Georgia state legislature illegally expelled all 33 of its elected Black representatives.",
+    "longDetail": "A blatant political coup demonstrating that even democratic elections would be overturned to prevent Black political power.",
+    "names": "Tunis Campbell, Henry McNeal Turner, and 31 others."
+  },
+  {
+    "year": 1870,
+    "title": "Eutaw Massacre",
+    "category": "Violence",
+    "location": "Eutaw, AL",
+    "shortSummary": "White Democrats opened fire on a crowd of Black Republican voters, killing 4 and wounding 54.",
+    "longDetail": "The attack was explicitly designed to prevent Black political organizing ahead of elections, permanently damaging local Black political power.",
+    "deaths": "4"
+  },
+  {
+    "year": 1871,
+    "title": "Meridian Massacre",
+    "category": "Violence",
+    "location": "Meridian, MS",
+    "shortSummary": "A courthouse confrontation turned into a massacre, killing three Black Republican legislators and 25+ others.",
+    "longDetail": "White supremacist groups used the killings as a successful blueprint for overthrowing Reconstruction governments across the American South.",
+    "deaths": "30+"
+  },
+  {
+    "year": 1872,
+    "title": "Frankfort Election Riot",
+    "category": "Violence",
+    "location": "Frankfort, KY",
+    "shortSummary": "White mobs attacked Black voters attempting to participate in municipal elections.",
+    "longDetail": "State militias had to be called in, but the violence succeeded in suppressing the Black vote and setting a template for poll-terror."
+  },
+  {
+    "year": 1873,
+    "title": "Colfax Massacre",
+    "category": "Violence",
+    "location": "Colfax, LA",
+    "shortSummary": "A white paramilitary group slaughtered roughly 150 Black men defending the Grant Parish courthouse.",
+    "longDetail": "The U.S. Supreme Court later used this event to neuter federal enforcement of Black civil rights in United States v. Cruikshank.",
+    "deaths": "150+",
+    "names": "Over 150 Black men defending the courthouse."
+  },
+  {
+    "year": 1874,
+    "title": "Coushatta Massacre",
+    "category": "Violence",
+    "location": "Coushatta, LA",
+    "shortSummary": "White supremacist Red Shirts forced six Republican officeholders (four Black) to resign, then murdered them.",
+    "longDetail": "Part of a coordinated campaign to overthrow biracial governance and establish exclusive white economic and political control.",
+    "deaths": "6"
+  },
+  {
+    "year": 1875,
+    "title": "Clinton Massacre & The Mississippi Plan",
+    "category": "Violence",
+    "location": "Clinton, MS",
+    "shortSummary": "White paramilitaries murdered up to 50 Black residents to suppress voting.",
+    "longDetail": "This kicked off the 'Mississippi Plan', a systemic campaign of state-sanctioned terror that successfully overthrew Reconstruction in the state.",
+    "deaths": "50+"
+  },
+  {
+    "year": 1876,
+    "title": "Hamburg Massacre",
+    "category": "Violence",
+    "location": "Hamburg, SC",
+    "shortSummary": "Red Shirt white supremacists attacked Black militia members, killing 5 and torturing others.",
+    "longDetail": "The massacre helped swing the 1876 presidential election and ultimately ended Reconstruction, abandoning Black Americans to Jim Crow.",
+    "deaths": "5"
+  },
+  {
+    "year": 1877,
+    "title": "Compromise of 1877",
+    "category": "Policy",
+    "location": "Nationwide",
+    "shortSummary": "Federal troops were withdrawn from the South in a political deal to settle the presidential election.",
+    "longDetail": "This completely abandoned Black Americans to a century of Jim Crow apartheid, state-sanctioned terror, and economic exclusion."
+  },
+  {
+    "year": 1878,
+    "title": "Posse Comitatus Act",
+    "category": "Policy",
+    "location": "Nationwide",
+    "shortSummary": "Congress passed a law forbidding the use of the military to enforce domestic policies.",
+    "longDetail": "This effectively removed the last layer of federal protection for Black Southerners against local white militias and lynch mobs."
+  },
+  {
+    "year": 1879,
+    "title": "The Exoduster Movement",
+    "category": "Financial",
+    "location": "Kansas",
+    "shortSummary": "Tens of thousands of Black Americans fled Southern terror for Kansas.",
+    "longDetail": "This massive refugee crisis was a direct response to the unchecked violence and debt peonage of post-Reconstruction sharecropping."
+  },
+  {
+    "year": 1880,
+    "title": "Election Massacres",
+    "category": "Violence",
+    "location": "Nationwide",
+    "shortSummary": "Widespread violence at polls across the South left dozens of Black voters dead.",
+    "longDetail": "The normalization of using mass murder to secure local and federal elections for white supremacist candidates."
+  },
+  {
+    "year": 1881,
+    "title": "Tennessee Segregation Laws",
+    "category": "Policy",
+    "location": "Tennessee",
+    "shortSummary": "Tennessee became the first state to pass comprehensive laws mandating segregation in rail cars.",
+    "longDetail": "This triggered a wave of 'Jim Crow' transportation laws across the South, legally isolating Black Americans from public life."
+  },
+  {
+    "year": 1882,
+    "title": "Eight Box Law",
+    "category": "Policy",
+    "location": "South Carolina",
+    "shortSummary": "An intentionally confusing voting system designed entirely to disenfranchise illiterate Black voters.",
+    "longDetail": "Combined with poll taxes and terror, this functionally eliminated Black political power in the state for 80 years."
+  },
+  {
+    "year": 1883,
+    "title": "Civil Rights Cases of 1883",
+    "category": "Policy",
+    "location": "Nationwide",
+    "shortSummary": "The Supreme Court struck down the Civil Rights Act of 1875.",
+    "longDetail": "The Court ruled that the Constitution did not protect Black Americans from discrimination by private businesses, legalizing nationwide segregation."
+  },
+  {
+    "year": 1884,
+    "title": "Danville Massacre",
+    "category": "Violence",
+    "location": "Danville, VA",
+    "shortSummary": "A white mob slaughtered Black residents to suppress the Readjuster Party.",
+    "longDetail": "The massacre succeeded in driving Black political leaders from power in Virginia, ensuring white monopolization of state resources.",
+    "deaths": "4+"
+  },
+  {
+    "year": 1885,
+    "title": "Carrollton Courthouse Massacre",
+    "category": "Violence",
+    "location": "Carrollton, MS",
+    "shortSummary": "A white mob stormed a courthouse and murdered 23 Black men.",
+    "longDetail": "The men were attending a trial. The massacre was designed to prove that Black Americans had no legal protection or right to the justice system.",
+    "deaths": "23"
+  },
+  {
+    "year": 1886,
+    "title": "Washington County Massacre",
+    "category": "Violence",
+    "location": "Texas",
+    "shortSummary": "White mobs murdered over 8 Black political organizers over election disputes.",
+    "longDetail": "The perpetrators systematically hunted down Black leaders to prevent them from testifying about voter fraud and suppression.",
+    "deaths": "8+"
+  },
+  {
+    "year": 1887,
+    "title": "Thibodaux Massacre",
+    "category": "Violence",
+    "location": "Thibodaux, LA",
+    "shortSummary": "White militias killed 35\u2013300 Black sugar cane workers who had gone on strike for better wages.",
+    "longDetail": "One of the largest labor massacres in U.S. history. It effectively destroyed the sugar workers' union and halted Black labor organizing.",
+    "deaths": "35-300",
+    "impact": "Destruction of Black sugar workers' union"
+  },
+  {
+    "year": 1888,
+    "title": "Wahalak Massacre",
+    "category": "Violence",
+    "location": "Wahalak, MS",
+    "shortSummary": "A white mob hunted and killed multiple Black residents following a dispute.",
+    "longDetail": "Part of a broader pattern where any minor dispute between a white and Black person resulted in the collective punishment of the Black community."
+  },
+  {
+    "year": 1889,
+    "title": "Leflore County Massacre",
+    "category": "Violence",
+    "location": "Mississippi",
+    "shortSummary": "White militias murdered 25+ Black residents to stop them from forming a cooperative buying club.",
+    "longDetail": "A direct, violent assault on Black economic self-sufficiency, ensuring Black farmers remained trapped in the debt peonage of sharecropping.",
+    "deaths": "25+"
+  },
+  {
+    "year": 1890,
+    "title": "Mississippi Constitution Disenfranchisement",
+    "category": "Policy",
+    "location": "Mississippi",
+    "shortSummary": "Mississippi rewrote its constitution specifically to disenfranchise Black voters via poll taxes and literacy tests.",
+    "longDetail": "This became the model for the rest of the South, effectively erasing Black political representation for the next 75 years."
+  },
+  {
+    "year": 1891,
+    "title": "Arkansas Segregation Act",
+    "category": "Policy",
+    "location": "Arkansas",
+    "shortSummary": "Arkansas passed sweeping laws segregating all trains and public facilities.",
+    "longDetail": "A systematic, legally enforced humiliation designed to limit Black mobility and economic opportunity."
+  },
+  {
+    "year": 1892,
+    "title": "People's Grocery Lynching",
+    "category": "Violence",
+    "location": "Memphis, TN",
+    "shortSummary": "Three Black business owners were lynched by a white mob.",
+    "longDetail": "Their successful grocery store competed with a white-owned store. The triple lynching prompted Ida B. Wells' lifelong anti-lynching crusade.",
+    "deaths": "3",
+    "names": "Thomas Moss, Calvin McDowell, Will Stewart",
+    "impact": "Destruction of a thriving independent Black business."
+  },
+  {
+    "year": 1893,
+    "title": "Lynching of Henry Smith",
+    "category": "Violence",
+    "location": "Paris, TX",
+    "shortSummary": "Henry Smith was tortured and burned alive before a crowd of 10,000 white spectators.",
+    "longDetail": "A spectacular, heavily photographed lynching that demonstrated how racial terror had become public entertainment.",
+    "deaths": "1",
+    "names": "Henry Smith"
+  },
+  {
+    "year": 1894,
+    "title": "Millington Triple Lynching",
+    "category": "Violence",
+    "location": "Millington, TN",
+    "shortSummary": "Six Black men were abducted by a mob and lynched.",
+    "longDetail": "Law enforcement actively participated by handing the men over, a common feature of Jim Crow era racial terror.",
+    "deaths": "6"
+  },
+  {
+    "year": 1895,
+    "title": "South Carolina Constitution Rewrite",
+    "category": "Policy",
+    "location": "South Carolina",
+    "shortSummary": "Following Mississippi's lead, SC rewrote its constitution to eliminate the Black vote.",
+    "longDetail": "Black delegate Thomas E. Miller accurately predicted this would lead to decades of unchecked racial violence and economic theft."
+  },
+  {
+    "year": 1896,
+    "title": "Plessy v. Ferguson",
+    "category": "Policy",
+    "location": "Nationwide",
+    "shortSummary": "The Supreme Court upheld racial segregation, enshrining 'separate but equal' as constitutional law.",
+    "longDetail": "This ruling enabled states to systematically underfund Black schools, hospitals, and infrastructure for 60 years, engineering an insurmountable wealth gap."
+  },
+  {
+    "year": 1897,
+    "title": "Louisiana Disenfranchisement",
+    "category": "Policy",
+    "location": "Louisiana",
+    "shortSummary": "Louisiana introduced the 'Grandfather Clause' to protect white voters while barring Black voters.",
+    "longDetail": "Registered Black voters in Louisiana plummeted from 130,000 in 1896 to just 1,342 by 1904."
+  },
+  {
+    "year": 1898,
+    "title": "Wilmington Coup and Massacre",
+    "category": "Violence",
+    "location": "Wilmington, NC",
+    "shortSummary": "The only successful coup d'\u00e9tat in U.S. history: white men overthrew an elected biracial government, killing 60+.",
+    "longDetail": "The violence explicitly targeted and destroyed one of the wealthiest Black communities and business districts in the American South.",
+    "deaths": "60-300",
+    "impact": "Total loss of Black municipal power and generational wealth.",
+    "image": "https://upload.wikimedia.org/wikipedia/commons/4/4d/Wilmington_Race_Riot_1.jpg"
+  },
+  {
+    "year": 1899,
+    "title": "Palmetto Mass Lynching",
+    "category": "Violence",
+    "location": "Palmetto, GA",
+    "shortSummary": "Nine Black men were tied to trees and executed by a white mob following an alleged arson.",
+    "longDetail": "The mass execution was justified by local papers, further normalizing the mass slaughter of Black Americans without trial.",
+    "deaths": "9"
+  },
+  {
+    "year": 1900,
+    "title": "Robert Charles Riots",
+    "category": "Violence",
+    "location": "New Orleans, LA",
+    "shortSummary": "A white mob rampaged through New Orleans, killing dozens of Black residents.",
+    "longDetail": "Sparked when a Black man defended himself against police brutality. The mob systematically destroyed Black-owned businesses.",
+    "deaths": "28+"
+  },
+  {
+    "year": 1901,
+    "title": "George Henry White Leaves Congress",
+    "category": "Policy",
+    "location": "Washington, DC",
+    "shortSummary": "The last Black Congressman of the Reconstruction era delivered his farewell address.",
+    "longDetail": "Due to systemic disenfranchisement, there would not be another Black representative in Congress for 28 years."
+  },
+  {
+    "year": 1902,
+    "title": "Virginia Constitution Disenfranchisement",
+    "category": "Policy",
+    "location": "Virginia",
+    "shortSummary": "Virginia formally stripped voting rights from Black citizens.",
+    "longDetail": "The state engineered a system that guaranteed massive underfunding of Black schools and absolute white control of state resources."
+  },
+  {
+    "year": 1903,
+    "title": "Alabama Peonage Cases",
+    "category": "Financial",
+    "location": "Alabama",
+    "shortSummary": "Federal investigations revealed widespread, systematic slavery persisting in Alabama via debt peonage.",
+    "longDetail": "Despite federal awareness, the practice of arresting Black men and forcing them to work in mines and farms continued for decades."
+  },
+  {
+    "year": 1904,
+    "title": "Statesboro Burnings",
+    "category": "Violence",
+    "location": "Statesboro, GA",
+    "shortSummary": "Two Black men, Paul Reed and Will Cato, were burned alive at the stake by a mob.",
+    "longDetail": "The mob bypassed the legal system entirely to inflict maximum public terror on the local Black population.",
+    "deaths": "2",
+    "names": "Paul Reed, Will Cato"
+  },
+  {
+    "year": 1905,
+    "title": "Watkinsville Lynching",
+    "category": "Violence",
+    "location": "Watkinsville, GA",
+    "shortSummary": "A mob broke into a jail and murdered eight Black men in a single night.",
+    "longDetail": "None of the men had been convicted of a crime, underscoring the absolute lack of due process for Black Americans.",
+    "deaths": "8"
+  },
+  {
+    "year": 1906,
+    "title": "Atlanta Massacre",
+    "category": "Violence",
+    "location": "Atlanta, GA",
+    "shortSummary": "White mobs attacked Black residents over four days, killing 25\u2013100 Black people and destroying businesses.",
+    "longDetail": "The violence accelerated the Great Migration northward and helped spark the founding of the NAACP.",
+    "deaths": "25-100"
+  },
+  {
+    "year": 1907,
+    "title": "Mississippi Whitecap Terror",
+    "category": "Violence",
+    "location": "Mississippi",
+    "shortSummary": "White terror groups ('Whitecaps') conducted a coordinated campaign of violence against successful Black farmers.",
+    "longDetail": "The explicit goal was to steal Black-owned land and force independent Black farmers back into subservient sharecropping."
+  },
+  {
+    "year": 1908,
+    "title": "Springfield Race Riot",
+    "category": "Violence",
+    "location": "Springfield, IL",
+    "shortSummary": "A white mob rioted in Abraham Lincoln's hometown, killing 7 people and burning 40 Black homes/businesses.",
+    "longDetail": "The violence demonstrated that anti-Black terrorism wasn't confined to the South, directly precipitating the founding of the NAACP.",
+    "deaths": "7"
+  },
+  {
+    "year": 1909,
+    "title": "Cairo Lynching and Riot",
+    "category": "Violence",
+    "location": "Cairo, IL",
+    "shortSummary": "A white mob lynched a Black man and a white man, leading to widespread riots.",
+    "longDetail": "Showcased the volatility and violence of white mobs outside the Deep South.",
+    "deaths": "2",
+    "names": "Will James (Black), Henry Salzner (White)"
+  },
+  {
+    "year": 1910,
+    "title": "Slocum Massacre",
+    "category": "Violence",
+    "location": "Slocum, TX",
+    "shortSummary": "Hundreds of armed white men hunted Black residents for 16 hours, killing 8\u2013200 people.",
+    "longDetail": "The massacre drove every Black resident from the area permanently, functioning as ethnic cleansing. It has been almost completely erased from official state history.",
+    "deaths": "8-200",
+    "impact": "Massive property theft via forced abandonment."
+  },
+  {
+    "year": 1911,
+    "title": "Lake City Mass Lynching",
+    "category": "Violence",
+    "location": "Lake City, FL",
+    "shortSummary": "Six Black men were lynched simultaneously by a white mob.",
+    "longDetail": "The men were murdered based on completely unproven allegations, a standard tactic to terrorize Black communities into submission.",
+    "deaths": "6"
+  },
+  {
+    "year": 1912,
+    "title": "Forsyth County Expulsion",
+    "category": "Violence",
+    "location": "Cumming, GA",
+    "shortSummary": "White mobs violently expelled the entire Black population of Forsyth County (over 1,000 people).",
+    "longDetail": "The county remained virtually all-white for the next 75 years, representing a massive theft of Black property and land.",
+    "impact": "Over 1,000 Black residents dispossessed of their homes and farms."
+  },
+  {
+    "year": 1913,
+    "title": "Federal Government Segregation",
+    "category": "Policy",
+    "location": "Washington, DC",
+    "shortSummary": "President Woodrow Wilson mandated the segregation of all federal workplaces.",
+    "longDetail": "This policy downgraded thousands of Black federal workers, stripping them of middle-class incomes and prestige."
+  },
+  {
+    "year": 1914,
+    "title": "Monroe Mass Lynching",
+    "category": "Violence",
+    "location": "Monroe, LA",
+    "shortSummary": "Multiple Black residents were murdered in a coordinated string of lynchings.",
+    "longDetail": "Local authorities refused to investigate, cementing the total impunity of white lynch mobs."
+  },
+  {
+    "year": 1915,
+    "title": "Birth of a Nation Revives KKK",
+    "category": "Policy",
+    "location": "Nationwide",
+    "shortSummary": "The release of the intensely racist film 'The Birth of a Nation' led directly to the rebirth of the Ku Klux Klan.",
+    "longDetail": "The film was screened at the White House and catalyzed a massive resurgence in organized racial terror across the country."
+  },
+  {
+    "year": 1916,
+    "title": "The Waco Horror",
+    "category": "Violence",
+    "location": "Waco, TX",
+    "shortSummary": "Jesse Washington, a Black teenager, was castrated, mutilated, and burned alive before 10,000 cheering white spectators.",
+    "longDetail": "Photographs of his charred body were sold as postcards, representing the absolute nadir of American racial sadism.",
+    "deaths": "1",
+    "names": "Jesse Washington",
+    "image": "https://upload.wikimedia.org/wikipedia/commons/1/13/Jesse_Washington_lynching.jpg"
+  },
+  {
+    "year": 1917,
+    "title": "East St. Louis Massacre",
+    "category": "Violence",
+    "location": "East St. Louis, IL",
+    "shortSummary": "White mobs conducted a two-day campaign of murder and arson, killing 40\u2013200 Black people.",
+    "longDetail": "The attacks left 6,000 Black residents homeless and triggered an NAACP silent protest march down Fifth Avenue in New York.",
+    "deaths": "40-200",
+    "impact": "6,000 Black residents rendered homeless."
+  },
+  {
+    "year": 1918,
+    "title": "Brooks County Mass Lynchings",
+    "category": "Violence",
+    "location": "Brooks County, GA",
+    "shortSummary": "Following a dispute, a white mob lynched Mary Turner (who was pregnant) and at least 10 other Black residents.",
+    "longDetail": "When Mary Turner protested her husband's lynching, the mob hung her upside down, cut her open, and crushed her unborn child.",
+    "deaths": "11",
+    "names": "Mary Turner and unborn child, Hayes Turner, and others"
+  },
+  {
+    "year": 1919,
+    "title": "Red Summer & Elaine Massacre",
+    "category": "Violence",
+    "location": "Nationwide",
+    "shortSummary": "White mobs attacked Black communities in dozens of cities. In Elaine, AR, up to 237 Black sharecroppers were slaughtered.",
+    "longDetail": "The violence was a nationwide coordinated backlash against returning Black WWI veterans and Black economic mobility.",
+    "deaths": "237+"
+  },
+  {
+    "year": 1920,
+    "title": "Ocoee Massacre & Duluth Lynchings",
+    "category": "Violence",
+    "location": "FL & MN",
+    "shortSummary": "White mobs massacred 50+ Black voters in Florida and lynched three Black circus workers in Minnesota.",
+    "longDetail": "Demonstrated that spectacular racial violence was used to suppress voting in the South and terrorize populations in the North.",
+    "deaths": "53+",
+    "names": "Elias Clayton, Elmer Jackson, Isaac McGhie (Duluth)"
+  },
+  {
+    "year": 1921,
+    "title": "Tulsa Race Massacre",
+    "category": "Violence",
+    "location": "Tulsa, OK",
+    "shortSummary": "A white mob destroyed the 35-block Greenwood District ('Black Wall Street'), killing 100\u2013300 Black residents.",
+    "longDetail": "The violence wiped out an estimated $200 million in generational wealth (2026 dollars) in 18 hours. No reparations have ever been paid.",
+    "deaths": "100-300",
+    "impact": "$200+ Million in generational wealth destroyed.",
+    "image": "https://upload.wikimedia.org/wikipedia/commons/3/36/Tulsa_race_riot_damage.jpg"
+  },
+  {
+    "year": 1922,
+    "title": "Dyer Anti-Lynching Bill Defeated",
+    "category": "Policy",
+    "location": "Washington, DC",
+    "shortSummary": "Southern Democrats filibustered a federal law that would have made lynching a federal crime.",
+    "longDetail": "This legislative failure guaranteed that lynch mobs would continue to operate with absolute legal immunity for decades."
+  },
+  {
+    "year": 1923,
+    "title": "Rosewood Massacre",
+    "category": "Violence",
+    "location": "Rosewood, FL",
+    "shortSummary": "A white mob destroyed the entire Black town of Rosewood, killing 6\u201327+ residents.",
+    "longDetail": "The thriving Black population was driven permanently from their homes, effectively erasing a prosperous independent economic ecosystem.",
+    "deaths": "6-27+",
+    "impact": "An entire town's property and wealth completely erased."
+  },
+  {
+    "year": 1924,
+    "title": "Racial Integrity Act",
+    "category": "Policy",
+    "location": "Virginia",
+    "shortSummary": "Virginia passed laws criminalizing interracial marriage and legally erasing Indigenous and Black identities.",
+    "longDetail": "A cornerstone of the eugenics movement, explicitly designed to protect 'white racial purity' and codify white supremacy."
+  },
+  {
+    "year": 1925,
+    "title": "Ossian Sweet Mob Attack",
+    "category": "Violence",
+    "location": "Detroit, MI",
+    "shortSummary": "A white mob attacked the home of a Black physician who had moved into a white neighborhood.",
+    "longDetail": "Though Sweet successfully defended himself in court, the mob violence enforced intense residential segregation in Northern cities."
+  },
+  {
+    "year": 1926,
+    "title": "Corrigan v. Buckley",
+    "category": "Policy",
+    "location": "Nationwide",
+    "shortSummary": "The Supreme Court validated the use of racially restrictive housing covenants.",
+    "longDetail": "This legalized the systemic exclusion of Black Americans from white neighborhoods, cementing the wealth-generating segregation of American cities."
+  },
+  {
+    "year": 1927,
+    "title": "Little Rock Lynching",
+    "category": "Violence",
+    "location": "Little Rock, AR",
+    "shortSummary": "John Carter was lynched, and his body was dragged through the Black business district.",
+    "longDetail": "The mob explicitly targeted the Black commercial center to destroy property and inflict maximum psychological terror.",
+    "deaths": "1",
+    "names": "John Carter"
+  },
+  {
+    "year": 1928,
+    "title": "Great Mississippi Flood Camps",
+    "category": "Financial",
+    "location": "Mississippi Delta",
+    "shortSummary": "Black flood victims were forced into concentration camps and forced to work at gunpoint without pay.",
+    "longDetail": "Relief funds were systematically diverted to white planters while Black refugees suffered extreme deprivation and abuse.",
+    "impact": "Massive wage theft and diversion of federal aid from Black victims."
+  },
+  {
+    "year": 1929,
+    "title": "Florida Voter Suppression Terror",
+    "category": "Violence",
+    "location": "Florida",
+    "shortSummary": "A series of targeted lynchings and beatings of Black organizers ahead of local elections.",
+    "longDetail": "Maintained the absolute political dominance of white supremacists in state and local governance."
+  },
+  {
+    "year": 1930,
+    "title": "Marion Mass Lynching",
+    "category": "Violence",
+    "location": "Marion, IN",
+    "shortSummary": "A mob of 10,000 white people lynched Thomas Shipp and Abram Smith.",
+    "longDetail": "The photograph of the lynching crowd became one of the most famous images of racial terror, inspiring the song 'Strange Fruit'.",
+    "deaths": "2",
+    "names": "Thomas Shipp, Abram Smith",
+    "image": "https://upload.wikimedia.org/wikipedia/commons/thumb/c/cc/Lynchings_of_Thomas_Shipp_and_Abram_Smith.jpg/800px-Lynchings_of_Thomas_Shipp_and_Abram_Smith.jpg"
+  },
+  {
+    "year": 1931,
+    "title": "Scottsboro Boys Arrested",
+    "category": "Policy",
+    "location": "Alabama",
+    "shortSummary": "Nine Black teenagers were falsely accused of rape and sentenced to death after sham trials.",
+    "longDetail": "The case exposed the complete weaponization of the Southern judicial system to legally lynch Black Americans."
+  },
+  {
+    "year": 1932,
+    "title": "Tuskegee Syphilis Study Begins",
+    "category": "Policy",
+    "location": "Tuskegee, AL",
+    "shortSummary": "The US government began a 40-year experiment deliberately withholding syphilis treatment from Black men.",
+    "longDetail": "An egregious medical atrocity that killed dozens, infected families, and generated generations of justified medical distrust.",
+    "deaths": "128+"
+  },
+  {
+    "year": 1933,
+    "title": "Decatur Lynchings",
+    "category": "Violence",
+    "location": "Decatur, AL",
+    "shortSummary": "Escalating mob violence surrounding the Scottsboro Boys trials terrorized the local Black community.",
+    "longDetail": "Mobs frequently gathered outside the courthouse to guarantee convictions through the threat of mass violence."
+  },
+  {
+    "year": 1934,
+    "title": "FHA Redlining Begins",
+    "category": "Financial",
+    "location": "Nationwide",
+    "shortSummary": "The Federal Housing Administration color-coded Black neighborhoods red, refusing to insure mortgages in those areas.",
+    "longDetail": "This guaranteed Black families could not build home equity or access credit, while white families accumulated vast generational wealth.",
+    "image": "https://upload.wikimedia.org/wikipedia/commons/thumb/c/c5/HOLC_Philadelphia.jpg/800px-HOLC_Philadelphia.jpg"
+  },
+  {
+    "year": 1935,
+    "title": "Harlem Riot",
+    "category": "Violence",
+    "location": "New York, NY",
+    "shortSummary": "A riot erupted after rumors of police brutality against a Black teenager, reflecting deep anger over extreme poverty.",
+    "longDetail": "The mayor's own commission cited systemic economic exploitation of Black Harlemites as the root cause, but the report was suppressed.",
+    "deaths": "3"
+  },
+  {
+    "year": 1936,
+    "title": "Lint River Terror",
+    "category": "Violence",
+    "location": "Georgia",
+    "shortSummary": "Coordinated KKK violence against Black sharecroppers demanding fairer wages.",
+    "longDetail": "Used to crush any attempts at labor organizing among the most economically exploited workers in the country."
+  },
+  {
+    "year": 1937,
+    "title": "Marianna Mass Lynching",
+    "category": "Violence",
+    "location": "Marianna, FL",
+    "shortSummary": "A white mob tortured and lynched Claude Neal.",
+    "longDetail": "The lynching was advertised in newspapers beforehand, drawing thousands of spectators from across state lines.",
+    "deaths": "1",
+    "names": "Claude Neal"
+  },
+  {
+    "year": 1938,
+    "title": "Gaines v. Canada Resistance",
+    "category": "Policy",
+    "location": "Missouri",
+    "shortSummary": "Despite a SCOTUS ruling ordering the admission of a Black student to law school, states violently resisted.",
+    "longDetail": "The plaintiff, Lloyd Gaines, mysteriously disappeared shortly after winning his case and was never found.",
+    "names": "Lloyd Gaines"
+  },
+  {
+    "year": 1939,
+    "title": "Miami KKK Voter Intimidation",
+    "category": "Violence",
+    "location": "Miami, FL",
+    "shortSummary": "The KKK drove through Black neighborhoods with effigies to stop Black residents from voting.",
+    "longDetail": "A blatant display of state-tolerated paramilitary force to maintain white political control."
+  },
+  {
+    "year": 1940,
+    "title": "Lynching of Elbert Williams",
+    "category": "Violence",
+    "location": "Brownsville, TN",
+    "shortSummary": "NAACP leader Elbert Williams was lynched for organizing a voter registration drive.",
+    "longDetail": "A direct assassination of a political leader designed to crush the local civil rights movement.",
+    "deaths": "1",
+    "names": "Elbert Williams"
+  },
+  {
+    "year": 1941,
+    "title": "Quincy Lynching",
+    "category": "Violence",
+    "location": "Quincy, FL",
+    "shortSummary": "A Black man was lynched with the direct complicity of local law enforcement.",
+    "longDetail": "Standard procedure in Jim Crow: police disarmed the victim and handed them to the mob."
+  },
+  {
+    "year": 1942,
+    "title": "Lynching of Cleo Wright",
+    "category": "Violence",
+    "location": "Sikeston, MO",
+    "shortSummary": "A mob dragged Cleo Wright behind a car and burned him in front of a Black church.",
+    "longDetail": "The failure of the federal government to prosecute the mob highlighted the impotence of the DOJ in protecting Black lives.",
+    "deaths": "1",
+    "names": "Cleo Wright"
+  },
+  {
+    "year": 1943,
+    "title": "Detroit & Beaumont Riots",
+    "category": "Violence",
+    "location": "MI & TX",
+    "shortSummary": "Massive race riots triggered by white resentment over Black wartime employment and housing.",
+    "longDetail": "Federal troops were deployed. The riots proved that white Northern populations would violently resist integration.",
+    "deaths": "34"
+  },
+  {
+    "year": 1944,
+    "title": "GI Bill Discrimination",
+    "category": "Financial",
+    "location": "Nationwide",
+    "shortSummary": "The GI Bill offered subsidized mortgages, but local administration allowed systemic denial to Black veterans.",
+    "longDetail": "This policy served as a massive driver of the modern racial wealth gap by excluding millions of Black soldiers from the post-war middle class boom.",
+    "impact": "Trillions of dollars in lost middle-class equity for Black veterans."
+  },
+  {
+    "year": 1945,
+    "title": "Post-War Police Violence",
+    "category": "Violence",
+    "location": "Nationwide",
+    "shortSummary": "Returning Black veterans faced a massive surge in police beatings and lynchings.",
+    "longDetail": "White communities responded violently to Black veterans demanding the democracy they had just fought for abroad."
+  },
+  {
+    "year": 1946,
+    "title": "Moore's Ford Lynching",
+    "category": "Violence",
+    "location": "Monroe, GA",
+    "shortSummary": "Two Black couples (one woman 7 months pregnant) were executed at close range by a white mob.",
+    "longDetail": "The gruesome massacre prompted President Truman to establish the Committee on Civil Rights, yet no perpetrator was ever convicted.",
+    "deaths": "4",
+    "names": "George & Mae Murray Dorsey, Roger & Dorothy Malcom"
+  },
+  {
+    "year": 1947,
+    "title": "Blinding of Isaac Woodard",
+    "category": "Violence",
+    "location": "Batesburg, SC",
+    "shortSummary": "A Black WWII veteran was dragged from a bus and beaten blind by a local police chief.",
+    "longDetail": "The horrific police brutality drew national outrage and became a catalyst for the modern civil rights movement.",
+    "names": "Isaac Woodard"
+  },
+  {
+    "year": 1948,
+    "title": "Assassination of Robert Mallard",
+    "category": "Violence",
+    "location": "Toombs County, GA",
+    "shortSummary": "A Black man was ambushed and murdered by the KKK for voting.",
+    "longDetail": "His widow was subsequently imprisoned when she attempted to testify against the killers.",
+    "deaths": "1",
+    "names": "Robert Mallard"
+  },
+  {
+    "year": 1949,
+    "title": "Groveland Boys Framed",
+    "category": "Violence",
+    "location": "Groveland, FL",
+    "shortSummary": "Four Black men were framed for rape; a mob burned Black homes and the sheriff executed two of the men.",
+    "longDetail": "A textbook case of the justice system and mob violence working in tandem to destroy Black lives."
+  },
+  {
+    "year": 1950,
+    "title": "Execution of Willie McGee",
+    "category": "Policy",
+    "location": "Mississippi",
+    "shortSummary": "A Black man was executed for alleged rape despite international outcry and evidence of a consensual affair.",
+    "longDetail": "Highlighted the deeply racist application of the death penalty, used as a legalized form of lynching.",
+    "deaths": "1",
+    "names": "Willie McGee"
+  },
+  {
+    "year": 1951,
+    "title": "Assassination of Harry T. Moore",
+    "category": "Violence",
+    "location": "Mims, FL",
+    "shortSummary": "The NAACP director and his wife were murdered when their home was bombed on Christmas night.",
+    "longDetail": "Moore was targeted for his voter registration drives and investigations into lynchings. No one was ever charged.",
+    "deaths": "2",
+    "names": "Harry T. & Harriette Moore"
+  },
+  {
+    "year": 1952,
+    "title": "Florida KKK Bombings",
+    "category": "Violence",
+    "location": "Florida",
+    "shortSummary": "A massive wave of KKK bombings targeted Black homes, Jewish centers, and Catholic churches.",
+    "longDetail": "Terrorists used dynamite to enforce housing segregation and intimidate civil rights activists."
+  },
+  {
+    "year": 1953,
+    "title": "Baton Rouge Bus Boycott",
+    "category": "Policy",
+    "location": "Louisiana",
+    "shortSummary": "Black residents successfully boycotted segregated buses, facing severe police intimidation.",
+    "longDetail": "The blueprint for the Montgomery Bus Boycott two years later."
+  },
+  {
+    "year": 1954,
+    "title": "White Citizens' Councils Formed",
+    "category": "Policy",
+    "location": "South",
+    "shortSummary": "In response to Brown v. Board, prominent white politicians formed councils to economically destroy Black activists.",
+    "longDetail": "They weaponized banks and employers to fire, evict, and deny credit to anyone supporting civil rights."
+  },
+  {
+    "year": 1955,
+    "title": "Lynching of Emmett Till",
+    "category": "Violence",
+    "location": "Money, MS",
+    "shortSummary": "A 14-year-old boy was brutally tortured and murdered for allegedly whistling at a white woman.",
+    "longDetail": "The open-casket funeral exposed the absolute barbarity of white supremacy to the world. His killers were acquitted.",
+    "deaths": "1",
+    "names": "Emmett Till",
+    "image": "https://upload.wikimedia.org/wikipedia/en/thumb/9/91/Emmett_Till.jpg/220px-Emmett_Till.jpg"
+  },
+  {
+    "year": 1956,
+    "title": "Federal Highway Act",
+    "category": "Financial",
+    "location": "Nationwide",
+    "shortSummary": "The Interstate Highway System was deliberately routed through prosperous Black neighborhoods.",
+    "longDetail": "This destroyed hundreds of Black business districts and homes, a policy known in the community as 'Negro removal'.",
+    "impact": "Destruction of thousands of Black-owned businesses and homes."
+  },
+  {
+    "year": 1957,
+    "title": "Little Rock Nine Mob Violence",
+    "category": "Violence",
+    "location": "Little Rock, AR",
+    "shortSummary": "Vicious white mobs attacked Black students attempting to integrate Central High School.",
+    "longDetail": "President Eisenhower had to deploy the 101st Airborne Division to prevent the children from being murdered by the mob."
+  },
+  {
+    "year": 1958,
+    "title": "Bombing of Bethel Baptist Church",
+    "category": "Violence",
+    "location": "Birmingham, AL",
+    "shortSummary": "White supremacists bombed the church of civil rights leader Fred Shuttlesworth.",
+    "longDetail": "One of dozens of bombings in Birmingham, earning the city the nickname 'Bombingham'."
+  },
+  {
+    "year": 1959,
+    "title": "Lynching of Mack Charles Parker",
+    "category": "Violence",
+    "location": "Poplarville, MS",
+    "shortSummary": "A mob dragged Parker from his jail cell, beat him, and threw his body in the Pearl River.",
+    "longDetail": "The FBI identified the killers, but a local grand jury refused to indict them, proving the continued complicity of the legal system.",
+    "deaths": "1",
+    "names": "Mack Charles Parker"
+  },
+  {
+    "year": 1960,
+    "title": "Ax Handle Saturday",
+    "category": "Violence",
+    "location": "Jacksonville, FL",
+    "shortSummary": "A white mob of 200 men armed with baseball bats and ax handles attacked Black youth conducting a sit-in.",
+    "longDetail": "Police stood by and watched until Black residents began to fight back, at which point police arrested the Black victims."
+  },
+  {
+    "year": 1961,
+    "title": "Freedom Riders Firebombed",
+    "category": "Violence",
+    "location": "Anniston, AL",
+    "shortSummary": "A KKK mob firebombed a bus of civil rights workers and held the doors shut to burn them alive.",
+    "longDetail": "When the riders escaped the inferno, the mob beat them with iron pipes. Local police conspired with the Klan."
+  },
+  {
+    "year": 1962,
+    "title": "Ole Miss Riot",
+    "category": "Violence",
+    "location": "Oxford, MS",
+    "shortSummary": "A deadly riot erupted when white segregationists tried to prevent James Meredith from enrolling at the University of Mississippi.",
+    "longDetail": "Two people were killed and hundreds injured before federal troops quelled the white supremacist uprising.",
+    "deaths": "2"
+  },
+  {
+    "year": 1963,
+    "title": "Birmingham Church Bombing",
+    "category": "Violence",
+    "location": "Birmingham, AL",
+    "shortSummary": "Ku Klux Klan members bombed the 16th Street Baptist Church, killing four Black girls.",
+    "longDetail": "The explicit act of terrorism shocked the nation, horrified the world, and accelerated passage of the Civil Rights Act of 1964.",
+    "deaths": "4",
+    "names": "Addie Mae Collins, Cynthia Wesley, Carole Robertson, Carol Denise McNair"
+  },
+  {
+    "year": 1964,
+    "title": "Murders of Chaney, Goodman, Schwerner",
+    "category": "Violence",
+    "location": "Philadelphia, MS",
+    "shortSummary": "Klan members, including law enforcement, abducted and murdered three civil rights workers.",
+    "longDetail": "The brutal assassinations galvanized the civil rights movement. State murder charges against the perpetrators were not filed until 2005.",
+    "deaths": "3",
+    "names": "James Chaney, Andrew Goodman, Michael Schwerner"
+  },
+  {
+    "year": 1965,
+    "title": "Bloody Sunday & Watts Uprising",
+    "category": "Violence",
+    "location": "AL & CA",
+    "shortSummary": "Police brutally beat marchers in Selma; months later, systemic police abuse triggered a massive uprising in LA.",
+    "longDetail": "Exposed the twin realities of Southern state-sanctioned violence and Northern systemic police brutality and poverty.",
+    "deaths": "34"
+  },
+  {
+    "year": 1966,
+    "title": "Assassination of Vernon Dahmer",
+    "category": "Violence",
+    "location": "Hattiesburg, MS",
+    "shortSummary": "The KKK firebombed the home of a Black civil rights leader who offered to pay poll taxes for Black voters.",
+    "longDetail": "Dahmer died defending his family from the flames. His murder was orchestrated by the KKK Imperial Wizard.",
+    "deaths": "1",
+    "names": "Vernon Dahmer"
+  },
+  {
+    "year": 1967,
+    "title": "Detroit & Newark Uprisings",
+    "category": "Violence",
+    "location": "MI & NJ",
+    "shortSummary": "Police brutality and extreme economic deprivation sparked the deadliest urban uprisings in modern US history.",
+    "longDetail": "The Kerner Commission warned that America was moving toward two societies, one black, one white\u2014separate and unequal.",
+    "deaths": "69"
+  },
+  {
+    "year": 1968,
+    "title": "MLK Assassination & Orangeburg Massacre",
+    "category": "Violence",
+    "location": "TN & SC",
+    "shortSummary": "Dr. King was assassinated, and police gunned down Black students in SC.",
+    "longDetail": "King's murder sparked uprisings in 100+ cities, resulting in massive military deployment and decades of white flight and urban disinvestment.",
+    "deaths": "4+",
+    "names": "Dr. Martin Luther King Jr., Samuel Hammond, Delano Middleton, Henry Smith"
+  },
+  {
+    "year": 1969,
+    "title": "Assassination of Fred Hampton",
+    "category": "Violence",
+    "location": "Chicago, IL",
+    "shortSummary": "Chicago police, coordinated by the FBI's COINTELPRO, assassinated the 21-year-old Black Panther leader in his bed.",
+    "longDetail": "A deliberate, state-sponsored execution designed to prevent the rise of a unifying Black political leader.",
+    "deaths": "2",
+    "names": "Fred Hampton, Mark Clark"
+  },
+  {
+    "year": 1970,
+    "title": "Jackson State Killings",
+    "category": "Violence",
+    "location": "Jackson, MS",
+    "shortSummary": "State police fired 460 rounds into a women's dormitory at a Black college, killing 2 students.",
+    "longDetail": "Occurred days after Kent State, but received vastly less national outrage, reflecting biases in the valuation of Black life.",
+    "deaths": "2",
+    "names": "Phillip Gibbs, James Earl Green"
+  },
+  {
+    "year": 1971,
+    "title": "War on Drugs Declared",
+    "category": "Policy",
+    "location": "Nationwide",
+    "shortSummary": "Explicitly designed to target Black communities, the policy fueled mass incarceration and destroyed families.",
+    "longDetail": "Black Americans were subsequently arrested and imprisoned at 3-4x the rate of white Americans despite similar drug usage rates.",
+    "impact": "Generational wealth and earning power decimated via incarceration."
+  },
+  {
+    "year": 1972,
+    "title": "Southern University Shootings",
+    "category": "Violence",
+    "location": "Baton Rouge, LA",
+    "shortSummary": "Police shot and killed two Black students during a protest over campus funding and resources.",
+    "longDetail": "Another example of lethal state violence deployed against Black students demanding equal educational rights.",
+    "deaths": "2"
+  },
+  {
+    "year": 1973,
+    "title": "Murder of Santos Rodriguez",
+    "category": "Violence",
+    "location": "Dallas, TX",
+    "shortSummary": "A Dallas police officer played Russian roulette with a 12-year-old boy's head during an interrogation, killing him.",
+    "longDetail": "The officer served just two and a half years in prison, highlighting the profound lack of accountability for police violence.",
+    "deaths": "1",
+    "names": "Santos Rodriguez"
+  },
+  {
+    "year": 1974,
+    "title": "Boston Busing Riots",
+    "category": "Violence",
+    "location": "Boston, MA",
+    "shortSummary": "Violent white mobs attacked school buses carrying Black children to enforce de facto segregation.",
+    "longDetail": "Proved that violent, organized resistance to school integration was a Northern phenomenon as much as a Southern one."
+  },
+  {
+    "year": 1975,
+    "title": "Escambia County Jail Fire",
+    "category": "Violence",
+    "location": "Florida",
+    "shortSummary": "A preventable jail fire killed 14 Black men after guards ignored their pleas for help.",
+    "longDetail": "Highlighted the lethal negligence and profound racism embedded within the burgeoning mass incarceration system.",
+    "deaths": "14"
+  },
+  {
+    "year": 1976,
+    "title": "Reinstatement of the Death Penalty",
+    "category": "Policy",
+    "location": "Nationwide",
+    "shortSummary": "The Supreme Court reinstated the death penalty (Gregg v. Georgia).",
+    "longDetail": "The system immediately resumed its historic pattern: Black defendants, especially those accused of killing white victims, were disproportionately sentenced to die."
+  },
+  {
+    "year": 1977,
+    "title": "The Dawson Five Arrests",
+    "category": "Policy",
+    "location": "Georgia",
+    "shortSummary": "Five Black youths were coerced through police torture and threats of electrocution into confessing to murder.",
+    "longDetail": "Though eventually cleared, the case exposed the routine use of police torture to secure false convictions against Black Americans."
+  },
+  {
+    "year": 1978,
+    "title": "Killing of Arthur Miller",
+    "category": "Violence",
+    "location": "Brooklyn, NY",
+    "shortSummary": "A Black community leader was choked to death by NYPD officers.",
+    "longDetail": "A precursor to the Eric Garner and George Floyd murders, demonstrating a long history of lethal police chokeholds.",
+    "deaths": "1",
+    "names": "Arthur Miller"
+  },
+  {
+    "year": 1979,
+    "title": "Greensboro Massacre",
+    "category": "Violence",
+    "location": "Greensboro, NC",
+    "shortSummary": "KKK and neo-Nazi members assassinated 5 labor organizers in broad daylight on camera.",
+    "longDetail": "Despite video evidence, all-white juries acquitted the shooters, proving that violent white supremacy still enjoyed systemic legal protection.",
+    "deaths": "5"
+  },
+  {
+    "year": 1980,
+    "title": "Miami Riots",
+    "category": "Violence",
+    "location": "Miami, FL",
+    "shortSummary": "Police officers beat Black insurance executive Arthur McDuffie to death and were acquitted.",
+    "longDetail": "The acquittals sparked massive uprisings, resulting in 18 deaths and $100 million in property damage.",
+    "deaths": "18",
+    "names": "Arthur McDuffie (initial police victim)",
+    "impact": "$100M in property damage."
+  },
+  {
+    "year": 1981,
+    "title": "Lynching of Michael Donald",
+    "category": "Violence",
+    "location": "Mobile, AL",
+    "shortSummary": "KKK members abducted, murdered, and hung a 19-year-old Black man from a tree.",
+    "longDetail": "One of the last 'classic' lynchings in America. A subsequent lawsuit by his mother bankrupt the United Klans of America.",
+    "deaths": "1",
+    "names": "Michael Donald"
+  },
+  {
+    "year": 1982,
+    "title": "Voting Rights Act Weakened",
+    "category": "Policy",
+    "location": "Nationwide",
+    "shortSummary": "The DOJ fundamentally shifted its civil rights enforcement, backing away from desegregation and voting protection.",
+    "longDetail": "This era marked a sharp conservative rollback of the civil rights gains of the 1960s."
+  },
+  {
+    "year": 1983,
+    "title": "Killing of Michael Stewart",
+    "category": "Violence",
+    "location": "New York, NY",
+    "shortSummary": "A 25-year-old Black artist was beaten to death by transit police for writing graffiti.",
+    "longDetail": "All officers involved were acquitted, reinforcing the unwritten rule of police immunity in cases of Black death.",
+    "deaths": "1",
+    "names": "Michael Stewart"
+  },
+  {
+    "year": 1984,
+    "title": "Killing of Eleanor Bumpurs",
+    "category": "Violence",
+    "location": "New York, NY",
+    "shortSummary": "NYPD officers shot and killed a 66-year-old Black woman during an eviction over $98 in unpaid rent.",
+    "longDetail": "Highlighting the lethal intersection of poverty, housing insecurity, and hyper-aggressive policing.",
+    "deaths": "1",
+    "names": "Eleanor Bumpurs"
+  },
+  {
+    "year": 1985,
+    "title": "MOVE Bombing",
+    "category": "Violence",
+    "location": "Philadelphia, PA",
+    "shortSummary": "Police dropped a military-grade bomb on a Black liberation group's home, killing 11 people including 5 children.",
+    "longDetail": "The resulting fire was deliberately allowed to burn, destroying 65 homes. No police officer or city official was ever criminally charged.",
+    "deaths": "11",
+    "names": "John Africa and 10 others (including 5 children)",
+    "impact": "65 residential homes destroyed by police fire."
+  },
+  {
+    "year": 1986,
+    "title": "Howard Beach Incident",
+    "category": "Violence",
+    "location": "Queens, NY",
+    "shortSummary": "A white mob chased a Black man, Michael Griffith, onto a highway where he was struck and killed by a car.",
+    "longDetail": "The mob violence in New York City proved that visceral, deadly racism was thriving in the urban North.",
+    "deaths": "1",
+    "names": "Michael Griffith"
+  },
+  {
+    "year": 1987,
+    "title": "Forsyth County March Attacked",
+    "category": "Violence",
+    "location": "Cumming, GA",
+    "shortSummary": "Civil rights marchers were attacked by thousands of Klansmen in a county that violently expelled its Black population in 1912.",
+    "longDetail": "The massive white supremacist mobilization showed how deeply entrenched violent racism remained in the modern era."
+  },
+  {
+    "year": 1988,
+    "title": "Anti-Drug Abuse Act",
+    "category": "Policy",
+    "location": "Nationwide",
+    "shortSummary": "Established the 100-to-1 sentencing disparity between crack and powder cocaine.",
+    "longDetail": "This explicitly racist legislation fueled an explosion in the mass incarceration of Black Americans, devastating families and wealth.",
+    "impact": "Hundreds of thousands of Black men incarcerated, erasing family incomes."
+  },
+  {
+    "year": 1989,
+    "title": "Virginia Beach Riot",
+    "category": "Violence",
+    "location": "Virginia Beach, VA",
+    "shortSummary": "Police clashed violently with Black college students attending the Greekfest event.",
+    "longDetail": "The aggressive, militarized police response to Black students contrasted sharply with the tolerance shown to white spring breakers."
+  },
+  {
+    "year": 1990,
+    "title": "Charles Stuart Hoax",
+    "category": "Violence",
+    "location": "Boston, MA",
+    "shortSummary": "A white man murdered his wife and blamed a 'Black mugger', prompting a brutal police siege of Black neighborhoods.",
+    "longDetail": "Police terrorized innocent Black men based on a complete fabrication, demonstrating how easily white lies mobilized state violence."
+  },
+  {
+    "year": 1991,
+    "title": "Rodney King Beating",
+    "category": "Violence",
+    "location": "Los Angeles, CA",
+    "shortSummary": "Four LAPD officers were caught on video brutally beating Rodney King.",
+    "longDetail": "The video confirmed what Black communities had reported for decades: sadistic, systemic police violence was standard operating procedure.",
+    "names": "Rodney King"
+  },
+  {
+    "year": 1992,
+    "title": "Los Angeles Uprising",
+    "category": "Violence",
+    "location": "Los Angeles, CA",
+    "shortSummary": "The acquittal of the officers who beat Rodney King sparked 6 days of uprisings, resulting in 63 deaths and $1B in damage.",
+    "longDetail": "The most destructive civil unrest in US history, fueled by decades of police abuse and economic redlining in South LA.",
+    "deaths": "63",
+    "impact": "$1 Billion in property damage."
+  },
+  {
+    "year": 1993,
+    "title": "Killing of Malice Green Trial",
+    "category": "Violence",
+    "location": "Detroit, MI",
+    "shortSummary": "Two police officers were convicted of beating a Black motorist to death with flashlights.",
+    "longDetail": "A rare conviction that nevertheless highlighted the horrific, routine violence inflicted during minor traffic stops.",
+    "deaths": "1",
+    "names": "Malice Green"
+  },
+  {
+    "year": 1994,
+    "title": "1994 Crime Bill",
+    "category": "Policy",
+    "location": "Nationwide",
+    "shortSummary": "Passed the 'Three Strikes' law and funded massive prison expansion.",
+    "longDetail": "This legislation turbocharged the mass incarceration of Black Americans, stripping millions of men from their communities and the economy.",
+    "impact": "Exponential expansion of the prison-industrial complex."
+  },
+  {
+    "year": 1995,
+    "title": "Jon Burge Torture Ring Exposed",
+    "category": "Violence",
+    "location": "Chicago, IL",
+    "shortSummary": "Investigations revealed a Chicago police commander ran a torture ring, electrocuting and burning dozens of Black suspects.",
+    "longDetail": "The city spent millions defending the torture and millions more settling lawsuits; Burge served only a few years for perjury.",
+    "impact": "Over $100M paid in civil settlements."
+  },
+  {
+    "year": 1996,
+    "title": "St. Petersburg Unrest",
+    "category": "Violence",
+    "location": "St. Petersburg, FL",
+    "shortSummary": "Riots broke out after police shot and killed an unarmed Black teenager during a traffic stop.",
+    "longDetail": "Another in an endless cycle of lethal police violence triggering community uprisings and subsequent economic damage.",
+    "deaths": "1",
+    "names": "TyRon Lewis"
+  },
+  {
+    "year": 1997,
+    "title": "Torture of Abner Louima",
+    "category": "Violence",
+    "location": "New York, NY",
+    "shortSummary": "NYPD officers brutally sodomized and tortured a Haitian immigrant in a police precinct bathroom.",
+    "longDetail": "A horrific demonstration of sadistic police violence and the 'blue wall of silence' that attempted to cover it up.",
+    "names": "Abner Louima"
+  },
+  {
+    "year": 1998,
+    "title": "Lynching of James Byrd Jr.",
+    "category": "Violence",
+    "location": "Jasper, TX",
+    "shortSummary": "Three white supremacists dragged a Black man to death behind a pickup truck.",
+    "longDetail": "A modern-day lynching that shocked the world and eventually led to the passage of federal hate crime legislation.",
+    "deaths": "1",
+    "names": "James Byrd Jr."
+  },
+  {
+    "year": 1999,
+    "title": "Killing of Amadou Diallo",
+    "category": "Violence",
+    "location": "New York, NY",
+    "shortSummary": "Four plainclothes NYPD officers fired 41 shots at an unarmed African immigrant holding a wallet.",
+    "longDetail": "All officers were acquitted. The '41 shots' became a rallying cry against racial profiling and aggressive policing tactics.",
+    "deaths": "1",
+    "names": "Amadou Diallo"
+  },
+  {
+    "year": 2000,
+    "title": "Killing of Patrick Dorismond",
+    "category": "Violence",
+    "location": "New York, NY",
+    "shortSummary": "An unarmed Black security guard was shot and killed by an undercover NYPD officer who approached him for drugs.",
+    "longDetail": "The mayor subsequently released Dorismond's juvenile record to smear him, a common tactic used to justify the state killing of Black men.",
+    "deaths": "1",
+    "names": "Patrick Dorismond"
+  },
+  {
+    "year": 2001,
+    "title": "Cincinnati Riots",
+    "category": "Violence",
+    "location": "Cincinnati, OH",
+    "shortSummary": "The police killing of Timothy Thomas (the 15th Black man killed by police in 5 years) sparked days of unrest.",
+    "longDetail": "Led to a landmark collaborative agreement for police reform, though systemic economic issues remained unaddressed.",
+    "deaths": "1",
+    "names": "Timothy Thomas"
+  },
+  {
+    "year": 2002,
+    "title": "Systemic Disenfranchisement Tactics",
+    "category": "Policy",
+    "location": "Nationwide",
+    "shortSummary": "Following the 2000 election, states began implementing new, restrictive voter ID laws and purging voter rolls.",
+    "longDetail": "These policies disproportionately targeted and removed Black voters from the democratic process under the guise of 'fraud prevention'."
+  },
+  {
+    "year": 2003,
+    "title": "Benton Harbor Uprising",
+    "category": "Violence",
+    "location": "Benton Harbor, MI",
+    "shortSummary": "The death of a Black motorcyclist during a police chase sparked unrest in a deeply impoverished, segregated city.",
+    "longDetail": "Highlighting the explosive tension in deindustrialized, redlined Midwestern cities suffering from aggressive policing.",
+    "deaths": "1",
+    "names": "Terrance Shurn"
+  },
+  {
+    "year": 2004,
+    "title": "Killing of Ousmane Zongo",
+    "category": "Violence",
+    "location": "New York, NY",
+    "shortSummary": "An unarmed African immigrant was shot four times by a plainclothes NYPD officer during a raid he had nothing to do with.",
+    "longDetail": "Another instance of lethal negligence and racial profiling resulting in the death of an innocent Black man.",
+    "deaths": "1",
+    "names": "Ousmane Zongo"
+  },
+  {
+    "year": 2005,
+    "title": "Hurricane Katrina Systematic Abandonment",
+    "category": "Financial",
+    "location": "New Orleans, LA",
+    "shortSummary": "Federal levees failed, flooding predominantly Black neighborhoods; the government response was catastrophically slow.",
+    "longDetail": "FEMA abandoned tens of thousands of Black residents. The recovery funds largely bypassed Black homeowners, permanently altering the city's demographics.",
+    "impact": "Massive loss of Black generational home equity."
+  },
+  {
+    "year": 2006,
+    "title": "Killing of Sean Bell",
+    "category": "Violence",
+    "location": "New York, NY",
+    "shortSummary": "NYPD officers fired 50 shots into a car on the morning of Bell's wedding, killing him.",
+    "longDetail": "The officers were acquitted of all charges. The 50 shots became another grim milestone in the history of excessive police force.",
+    "deaths": "1",
+    "names": "Sean Bell"
+  },
+  {
+    "year": 2007,
+    "title": "The Jena Six Arrests",
+    "category": "Policy",
+    "location": "Jena, LA",
+    "shortSummary": "Six Black teenagers were charged with attempted murder for a schoolyard fight, while white students who hung nooses faced no charges.",
+    "longDetail": "The extreme overcharging exposed the massive racial double standard in the American criminal justice system."
+  },
+  {
+    "year": 2008,
+    "title": "Subprime Mortgage Crisis",
+    "category": "Financial",
+    "location": "Nationwide",
+    "shortSummary": "Major banks systematically steered Black homeowners into predatory subprime loans known internally as 'ghetto loans.'",
+    "longDetail": "The predatory targeting caused Black homeowners to lose $194 billion in home equity, effectively erasing 40 years of Black economic progress.",
+    "impact": "$194 Billion in Black home equity destroyed."
+  },
+  {
+    "year": 2009,
+    "title": "Killing of Oscar Grant",
+    "category": "Violence",
+    "location": "Oakland, CA",
+    "shortSummary": "A transit police officer shot an unarmed Black man in the back while he lay face down on a train platform.",
+    "longDetail": "The execution was captured on multiple cell phones, ushering in the modern era of viral videos exposing police killings.",
+    "deaths": "1",
+    "names": "Oscar Grant"
+  },
+  {
+    "year": 2010,
+    "title": "Killing of Aiyana Stanley-Jones",
+    "category": "Violence",
+    "location": "Detroit, MI",
+    "shortSummary": "A 7-year-old Black girl was shot in the head while sleeping during a militarized police raid filmed for a reality TV show.",
+    "longDetail": "The officer responsible was never convicted, showcasing the lethal consequences of the militarization of local police.",
+    "deaths": "1",
+    "names": "Aiyana Stanley-Jones"
+  },
+  {
+    "year": 2011,
+    "title": "Killing of Kenneth Chamberlain",
+    "category": "Violence",
+    "location": "White Plains, NY",
+    "shortSummary": "Police responding to a medical alert pendant broke down a 68-year-old Black veteran's door and shot him to death.",
+    "longDetail": "Officers used racial slurs during the breach. No federal charges were ever filed.",
+    "deaths": "1",
+    "names": "Kenneth Chamberlain Sr."
+  },
+  {
+    "year": 2012,
+    "title": "Murder of Trayvon Martin",
+    "category": "Violence",
+    "location": "Sanford, FL",
+    "shortSummary": "An unarmed Black teenager was profiled, stalked, and murdered by a neighborhood watch vigilante.",
+    "longDetail": "The killer's acquittal sparked the Black Lives Matter movement and highlighted how 'Stand Your Ground' laws protect white violence.",
+    "deaths": "1",
+    "names": "Trayvon Martin"
+  },
+  {
+    "year": 2013,
+    "title": "Shelby County v. Holder",
+    "category": "Policy",
+    "location": "Nationwide",
+    "shortSummary": "The Supreme Court gutted the Voting Rights Act of 1965, removing federal preclearance for voting changes.",
+    "longDetail": "Within 24 hours, states previously restricted for racial discrimination implemented harsh new voter ID laws and closed polling places in Black communities."
+  },
+  {
+    "year": 2014,
+    "title": "Ferguson Uprising & Eric Garner",
+    "category": "Violence",
+    "location": "MO & NY",
+    "shortSummary": "The police killings of Michael Brown and Eric Garner sparked nationwide uprisings against police impunity.",
+    "longDetail": "Garner's plea of 'I can't breathe' and Brown's body left in the street for four hours became symbols of the devaluation of Black life.",
+    "deaths": "2",
+    "names": "Michael Brown, Eric Garner"
+  },
+  {
+    "year": 2015,
+    "title": "Charleston Church Massacre",
+    "category": "Violence",
+    "location": "Charleston, SC",
+    "shortSummary": "A white supremacist murdered 9 Black worshippers at Mother Emanuel AME Church during Bible study.",
+    "longDetail": "The attack was a direct act of racial terrorism designed specifically to ignite a modern race war, echoing historical patterns of violence.",
+    "deaths": "9",
+    "names": "Clementa C. Pinckney, Cynthia Marie Graham Hurd, Susie Jackson, Ethel Lee Lance, Depayne Middleton-Doctor, Tywanza Sanders, Daniel L. Simmons, Sharonda Coleman-Singleton, Myra Thompson"
+  },
+  {
+    "year": 2016,
+    "title": "Killings of Philando Castile & Alton Sterling",
+    "category": "Violence",
+    "location": "MN & LA",
+    "shortSummary": "Two Black men were executed by police at point-blank range, both captured on horrific viral videos.",
+    "longDetail": "Despite crystal-clear video evidence, the legal system failed to hold the officers fully accountable, driving further despair and protests.",
+    "deaths": "2",
+    "names": "Philando Castile, Alton Sterling"
+  },
+  {
+    "year": 2017,
+    "title": "Charlottesville Unite the Right Rally",
+    "category": "Violence",
+    "location": "Charlottesville, VA",
+    "shortSummary": "White nationalists carrying torches chanted Nazi slogans; a neo-Nazi drove a car into counter-protesters, killing one.",
+    "longDetail": "The rally marked a terrifying mainstream resurgence of overt white supremacist organizing and violence."
+  },
+  {
+    "year": 2018,
+    "title": "Killing of Stephon Clark",
+    "category": "Violence",
+    "location": "Sacramento, CA",
+    "shortSummary": "Police shot an unarmed Black man 20 times in his grandmother's backyard, claiming his cell phone was a gun.",
+    "longDetail": "No officers were charged. The incident underscored how the legal threshold of 'officer fear' essentially legalizes the murder of Black citizens.",
+    "deaths": "1",
+    "names": "Stephon Clark"
+  },
+  {
+    "year": 2019,
+    "title": "Killing of Atatiana Jefferson",
+    "category": "Violence",
+    "location": "Fort Worth, TX",
+    "shortSummary": "A police officer shot a Black woman through her bedroom window while responding to a non-emergency welfare check.",
+    "longDetail": "Another tragic death of a Black citizen within the presumed safety of their own home at the hands of law enforcement.",
+    "deaths": "1",
+    "names": "Atatiana Jefferson"
+  },
+  {
+    "year": 2020,
+    "title": "Murder of George Floyd & COVID Wealth Transfer",
+    "category": "Violence",
+    "location": "Nationwide",
+    "shortSummary": "A police officer knelt on George Floyd's neck for 9 minutes, sparking the largest protest movement in US history.",
+    "longDetail": "Simultaneously, COVID-19 disproportionately killed Black Americans and decimated Black-owned businesses due to systemic health and financial inequities.",
+    "deaths": "1",
+    "names": "George Floyd",
+    "image": "https://upload.wikimedia.org/wikipedia/commons/thumb/c/c3/George_Floyd_mural_in_Minneapolis_02.jpg/800px-George_Floyd_mural_in_Minneapolis_02.jpg"
+  },
+  {
+    "year": 2021,
+    "title": "Voter Suppression Wave",
+    "category": "Policy",
+    "location": "Nationwide",
+    "shortSummary": "Following high Black voter turnout in 2020, 19 states passed 34 laws restricting access to voting.",
+    "longDetail": "A modern manifestation of historical disenfranchisement tactics, targeting mail-in voting and criminalizing giving water to voters in line."
+  },
+  {
+    "year": 2022,
+    "title": "Buffalo Supermarket Massacre",
+    "category": "Violence",
+    "location": "Buffalo, NY",
+    "shortSummary": "A white supremacist deliberately drove to a predominantly Black neighborhood and murdered 10 Black shoppers.",
+    "longDetail": "The shooter published a manifesto citing the 'Great Replacement' theory, connecting modern internet radicalization to historic racial terror.",
+    "deaths": "10"
+  },
+  {
+    "year": 2023,
+    "title": "Affirmative Action Struck Down",
+    "category": "Policy",
+    "location": "Nationwide",
+    "shortSummary": "The Supreme Court struck down affirmative action in college admissions.",
+    "longDetail": "The ruling effectively dismantled decades of policy designed to offset the historical exclusion of Black Americans from elite educational and economic networks."
+  },
+  {
+    "year": 2024,
+    "title": "Dismantling of DEI Programs",
+    "category": "Policy",
+    "location": "Nationwide",
+    "shortSummary": "A coordinated legal and political campaign outlawed Diversity, Equity, and Inclusion programs across corporate and academic America.",
+    "longDetail": "This accelerated the reversal of economic and professional gains made by Black Americans, halting efforts to close the wealth gap."
+  },
+  {
+    "year": 2025,
+    "title": "Mass Pardon Denials",
+    "category": "Policy",
+    "location": "Nationwide",
+    "shortSummary": "Efforts to posthumously pardon Black victims of sham Jim Crow trials faced massive political resistance and denial.",
+    "longDetail": "Highlighting the ongoing refusal of state governments to fully acknowledge or rectify historical judicial lynchings."
+  },
+  {
+    "year": 2026,
+    "title": "The Persistent Wealth Gap",
+    "category": "Financial",
+    "location": "Nationwide",
+    "shortSummary": "161 years after emancipation, the median Black family still holds roughly 15 cents for every dollar of white family wealth.",
+    "longDetail": "Despite generations of labor and civil rights struggles, the systemic extraction of wealth via redlining, mass incarceration, and policy remains entirely unrectified."
+  }
+];
 
     const track = document.getElementById('timeline-track');
-    
-    // 3. BUILD THE TIMELINE (Mapping every single year from 1865 to 2026)
+
     let currentYear = 1865;
-    
+
     while(currentYear <= 2026) {
-      // Find all events that happened in this year
       const eventsThisYear = timelineEvents.filter(e => e.year === currentYear);
-      
+
       if (eventsThisYear.length > 0) {
-        // Render the event cards
         eventsThisYear.forEach(event => {
           let borderColor = 'border-zinc-700';
           if (event.category === 'Violence') borderColor = 'border-red-600';
           if (event.category === 'Policy') borderColor = 'border-blue-500';
+          if (event.category === 'Financial') borderColor = 'border-amber-500';
+
+          // Data Enrichments
+          let tags = '';
+          if (event.deaths) tags += `<span class="inline-block bg-red-950 text-red-400 text-[10px] uppercase tracking-widest px-2 py-1 rounded mr-2 mb-2 font-bold">💀 ${event.deaths} Deaths</span>`;
+          if (event.impact) tags += `<span class="inline-block bg-amber-950 text-amber-400 text-[10px] uppercase tracking-widest px-2 py-1 rounded mr-2 mb-2 font-bold">💰 ${event.impact}</span>`;
+
+          let namesInfo = '';
+          if (event.names) namesInfo = `<p class="text-xs text-zinc-400 mb-3 border-l-2 border-zinc-700 pl-3"><strong>Victims/Targets:</strong> ${event.names}</p>`;
+
+          let imageInfo = '';
+          if (event.image) imageInfo = `<img src="${event.image}" class="w-full h-48 object-cover rounded mb-4 border border-zinc-700 grayscale hover:grayscale-0 transition-all duration-500" alt="Historical photo">`;
 
           const cardHTML = `
             <div class="event-card bg-zinc-900 border-t-4 ${borderColor} p-6 rounded shadow-2xl" data-year="${event.year}">
               <div class="flex justify-between items-baseline mb-2">
                 <span class="text-3xl font-black text-white">${event.year}</span>
-                <span class="text-xs font-bold uppercase tracking-wider text-zinc-500">${event.category}</span>
+                <span class="text-xs font-bold uppercase tracking-wider text-zinc-500">${event.category} • ${event.location}</span>
               </div>
+              ${imageInfo}
               <h2 class="text-xl md:text-2xl font-bold mb-3 text-white">${event.title}</h2>
+              <div class="mb-3">${tags}</div>
               <p class="text-zinc-300 text-base leading-relaxed mb-4">${event.shortSummary}</p>
-              
-              <button class="read-more-btn text-amber-500 font-bold text-sm uppercase tracking-widest flex items-center hover:text-amber-400 py-2">
+
+              <button class="read-more-btn text-amber-500 font-bold text-sm uppercase tracking-widest flex items-center hover:text-amber-400 py-2 cursor-pointer">
                 <span>Read More</span>
                 <svg class="w-4 h-4 ml-1 transform transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
               </button>
-              
+
               <div class="expandable-content pt-4 mt-2 border-t border-zinc-800">
+                ${namesInfo}
                 <p class="text-zinc-400 text-sm leading-relaxed">${event.longDetail}</p>
               </div>
             </div>
@@ -1949,44 +1667,33 @@
           track.insertAdjacentHTML('beforeend', cardHTML);
         });
       } else {
-        // If nothing major is explicitly carded this year, render an empty physical space
-        // This forces the user to physically scroll through time.
         track.insertAdjacentHTML('beforeend', `
-          <div class="empty-year" data-year="${currentYear}">
+          <div class="w-16 flex-shrink-0 flex flex-col items-center justify-center opacity-30 z-0" data-year="${currentYear}">
             <div class="w-2 h-2 rounded-full bg-zinc-700 mb-2"></div>
             <span class="text-xs text-zinc-600 font-bold">${currentYear}</span>
           </div>
         `);
       }
 
-      // ==========================================
-      // THE RED DOT WALLS (Injected at specific years)
-      // ==========================================
-      
+      // DOT WALL FIX
       if (currentYear === 1877) {
-        // After Reconstruction, we force them to scroll through 2,000 dots
         let dots = '';
-        for(let i=0; i<2000; i++) {
-           dots += `<div class="terror-dot"></div>`;
-        }
+        for(let i=0; i<2000; i++) { dots += `<div class="terror-dot"></div>`; }
         track.insertAdjacentHTML('beforeend', `
-          <div class="flex flex-col justify-center items-center ml-8 mr-16" data-year="1877">
-            <h3 class="text-red-500 font-black uppercase tracking-widest mb-4">Reconstruction Terror (2,000+ Victims)</h3>
-            <div class="dot-wall bg-zinc-950 border-y border-red-900/30 py-8">${dots}</div>
+          <div class="dot-wall-container" data-year="1877">
+            <h3 class="text-red-500 text-center font-black uppercase tracking-widest mb-4">Reconstruction Terror (2,000+ Victims)</h3>
+            <div class="bg-zinc-950 border-y border-red-900/30 dot-wall">${dots}</div>
           </div>
         `);
       }
 
       if (currentYear === 1950) {
-        // At the end of the Jim Crow era, we inject the massive 4,400 dot wall
         let dots = '';
-        for(let i=0; i<4400; i++) {
-           dots += `<div class="terror-dot"></div>`;
-        }
+        for(let i=0; i<4400; i++) { dots += `<div class="terror-dot"></div>`; }
         track.insertAdjacentHTML('beforeend', `
-          <div class="flex flex-col justify-center items-center ml-8 mr-16" data-year="1950">
-            <h3 class="text-red-500 font-black uppercase tracking-widest mb-4">Jim Crow Lynchings (4,400+ Victims)</h3>
-            <div class="dot-wall bg-zinc-950 border-y border-red-900/30 py-8">${dots}</div>
+          <div class="dot-wall-container" data-year="1950">
+            <h3 class="text-red-500 text-center font-black uppercase tracking-widest mb-4">Jim Crow Lynchings (4,400+ Victims)</h3>
+            <div class="bg-zinc-950 border-y border-red-900/30 dot-wall">${dots}</div>
           </div>
         `);
       }
@@ -1994,7 +1701,6 @@
       currentYear++;
     }
 
-    // Expand Read More buttons
     document.querySelectorAll('.read-more-btn').forEach(btn => {
       btn.addEventListener('click', (e) => {
         const content = e.currentTarget.nextElementSibling;
@@ -2002,50 +1708,45 @@
         content.classList.toggle('expanded');
         icon.classList.toggle('rotate-180');
         e.currentTarget.querySelector('span').innerText = content.classList.contains('expanded') ? 'Show Less' : 'Read More';
-        // Tell GSAP to recalculate the track width since a card just got taller
-        ScrollTrigger.refresh();
+        setTimeout(() => ScrollTrigger.refresh(), 400); 
       });
     });
 
-    // 4. GSAP HORIZONTAL SCROLL LOGIC
     gsap.registerPlugin(ScrollTrigger);
 
-    let trackWidth = track.scrollWidth;
+    function initScroll() {
+      let trackWidth = track.scrollWidth - window.innerWidth;
 
-    // Pin the wrapper and move the track to the left as the user scrolls down
-    gsap.to(track, {
-      x: () => -(trackWidth - window.innerWidth),
-      ease: "none",
-      scrollTrigger: {
-        trigger: ".horizontal-scroll-wrapper",
-        pin: true,
-        scrub: 1, // Smooth dragging effect
-        end: () => "+=" + trackWidth // The scroll distance equals the width of the track
-      }
-    });
+      let scrollTween = gsap.to(track, {
+        x: -trackWidth,
+        ease: "none",
+        scrollTrigger: {
+          trigger: ".horizontal-scroll-wrapper",
+          pin: true,
+          scrub: 1, 
+          end: () => "+=" + trackWidth,
 
-    // 5. UPDATE WEALTH BAR BASED ON SCROLL POSITION
-    // We check which element is currently in the middle of the screen
-    ScrollTrigger.create({
-      trigger: ".horizontal-scroll-wrapper",
-      start: "top top",
-      end: () => "+=" + trackWidth,
-      onUpdate: (self) => {
-        // Calculate approximate year based on scroll progress
-        let progress = self.progress; 
-        let calcYear = Math.round(1865 + (progress * (2026 - 1865)));
-        
-        // Find closest wealth data
-        const dataPoint = wealthTimeline.reduce((prev, curr) => {
-          return (Math.abs(curr.year - calcYear) < Math.abs(prev.year - calcYear) ? curr : prev);
-        });
-        
-        const ratioCents = Math.round(dataPoint.ratio * 100);
-        document.getElementById('black-wealth-bar').style.width = `${ratioCents}%`;
-        document.getElementById('current-year-display').innerText = calcYear;
-        document.getElementById('current-ratio').innerText = `${ratioCents}¢ per $1`;
-      }
-    });
+          onUpdate: (self) => {
+            let progress = self.progress; 
+            let calcYear = Math.round(1865 + (progress * (2026 - 1865)));
+
+            if(calcYear < 1860) calcYear = 1860;
+            if(calcYear > 2026) calcYear = 2026;
+
+            const dataPoint = wealthTimeline.reduce((prev, curr) => {
+              return (Math.abs(curr.year - calcYear) < Math.abs(prev.year - calcYear) ? curr : prev);
+            });
+
+            const ratioCents = Math.round(dataPoint.ratio * 100);
+            document.getElementById('black-wealth-bar').style.width = `${ratioCents}%`;
+            document.getElementById('current-year-display').innerText = calcYear;
+            document.getElementById('current-ratio').innerText = `${ratioCents}¢ per $1`;
+          }
+        }
+      });
+    }
+
+    window.addEventListener('load', initScroll);
   </script>
 </body>
 </html>
