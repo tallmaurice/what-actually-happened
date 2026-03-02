@@ -1,0 +1,290 @@
+<!DOCTYPE html>
+<html lang="en" class="scroll-smooth">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>What Actually Happened.</title>
+  <!-- Loads the styling engine automatically -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    body { background-color: #09090b; color: white; font-family: sans-serif; overflow-x: hidden; }
+    /* Smooth accordion transition for the 'Read More' buttons */
+    .expandable-content {
+      max-height: 0;
+      overflow: hidden;
+      transition: max-height 0.4s ease-in-out, opacity 0.4s ease-in-out;
+      opacity: 0;
+    }
+    .expanded { max-height: 1000px; opacity: 1; }
+    /* Makes scrolling smooth on mobile */
+    .timeline-card { will-change: transform, opacity; }
+  </style>
+</head>
+<body>
+
+  <!-- THE STICKY WEALTH BAR (Always stays at the top of the screen) -->
+  <header class="fixed top-0 w-full z-50 bg-black shadow-lg border-b border-zinc-800">
+    <div class="flex justify-between px-4 py-2 text-xs md:text-sm font-bold tracking-wider text-zinc-400">
+      <span id="current-year">1865</span>
+      <span class="hidden md:inline">Median Wealth: Black vs White Families</span>
+      <span class="md:hidden">Wealth Gap</span>
+      <span id="current-ratio">2¢ per $1</span>
+    </div>
+    <div class="h-3 w-full bg-zinc-800 relative">
+      <div class="absolute top-0 left-0 h-full w-full bg-amber-500 opacity-80"></div>
+      <div id="black-wealth-bar" class="absolute top-0 left-0 h-full bg-emerald-500 transition-all duration-700 ease-out" style="width: 2%;"></div>
+    </div>
+  </header>
+
+  <!-- INTRO SCREEN -->
+  <section class="min-h-screen flex flex-col justify-center items-center px-6 text-center">
+    <h1 class="text-5xl md:text-7xl font-extrabold mb-6 tracking-tight text-white">What Actually Happened.</h1>
+    <p class="text-lg md:text-xl text-zinc-400 max-w-2xl">
+      A timeline of mass violence, policy, and the systematic extraction of foundational wealth from Black Americans.
+    </p>
+    <div class="mt-16 animate-bounce text-zinc-500 font-bold uppercase tracking-widest text-sm">
+      Scroll to begin
+    </div>
+  </section>
+
+  <!-- WHERE THE CARDS GO -->
+  <main id="timeline-container" class="max-w-2xl mx-auto px-4 pb-32"></main>
+
+  <script>
+    // 1. WEALTH DATA (Powers the top bar)
+    const wealthTimeline = [
+      { year: 1860, ratio: 0.02 }, { year: 1870, ratio: 0.05 }, { year: 1900, ratio: 0.08 },
+      { year: 1930, ratio: 0.08 }, { year: 1950, ratio: 0.10 }, { year: 1970, ratio: 0.17 },
+      { year: 1983, ratio: 0.18 }, { year: 2007, ratio: 0.16 }, { year: 2010, ratio: 0.10 },
+      { year: 2019, ratio: 0.17 }, { year: 2026, ratio: 0.15 }
+    ];
+
+    // 2. TIMELINE EVENTS DATA
+    const timelineEvents = [
+      {
+        year: 1865, title: "Black Codes Enacted", category: "Policy", location: "Nationwide",
+        shortSummary: "Southern states passed laws effectively re-enslaving Black people through vagrancy laws and labor contracts.",
+        longDetail: "Any Black person without proof of employment could be arrested and leased out as a convict laborer. This legally enforced the initial post-slavery wealth gap.",
+        sourceURL: "https://www.blackpast.org/african-american-history/black-codes/", isLesserKnown: false, isEraCard: false
+      },
+      {
+        year: 1865, title: "Reconstruction Terror Era (1865–1877)", category: "Violence", location: "South",
+        shortSummary: "ERA SUMMARY: Over 2,000 Black people were lynched in the 12 years following emancipation as white mobs sought to crush Black political participation.",
+        longDetail: "This era saw orchestrated mass violence to suppress the Black vote. While massive single events like Colfax and Opelousas occurred, thousands of individual community leaders were assassinated.",
+        sourceURL: "https://eji.org/report/reconstruction-in-america/", isLesserKnown: false, isEraCard: true
+      },
+      {
+        year: 1866, title: "Memphis Massacre", category: "Violence", location: "Memphis, TN",
+        shortSummary: "A white mob, aided by police, attacked Black residents over three days, killing 46 Black people.",
+        longDetail: "The mob burned 91 homes, 4 churches, and 8 schools, sending a message that Black advancement would be met with terror.",
+        sourceURL: "https://eji.org/report/reconstruction-in-america/", isLesserKnown: false, isEraCard: false
+      },
+      {
+        year: 1868, title: "Opelousas Massacre", category: "Violence", location: "Opelousas, LA",
+        shortSummary: "One of the deadliest events of Reconstruction: 150–300 Black people were killed by white paramilitaries.",
+        longDetail: "Designed to intimidate Black voters and overthrow Republican governance. It remains almost entirely unknown despite a death toll matching America's worst catastrophes.",
+        sourceURL: "https://www.blackpast.org/african-american-history/opelousas-massacre-1868/", isLesserKnown: true, isEraCard: false
+      },
+      {
+        year: 1873, title: "Colfax Massacre", category: "Violence", location: "Colfax, LA",
+        shortSummary: "A white paramilitary group slaughtered roughly 150 Black men defending the Grant Parish courthouse.",
+        longDetail: "The U.S. Supreme Court later used this event to neuter federal enforcement of Black civil rights in United States v. Cruikshank, making it a devastating legal turning point.",
+        sourceURL: "https://eji.org/report/reconstruction-in-america/", isLesserKnown: false, isEraCard: false
+      },
+      {
+        year: 1877, title: "The Lynching Epidemic (1877–1950)", category: "Violence", location: "Nationwide",
+        shortSummary: "ERA SUMMARY: Over 4,400 documented racial terror lynchings occurred in the U.S. to enforce Jim Crow laws.",
+        longDetail: "Top 5 deadliest states: Mississippi (580+), Georgia (530+), Texas (490+), Louisiana (390+), Alabama (340+). Countless single-victim lynchings permanently destroyed Black wealth and family lineages.",
+        sourceURL: "https://lynchinginamerica.eji.org/explore", isLesserKnown: false, isEraCard: true
+      },
+      {
+        year: 1892, title: "People's Grocery Lynching", category: "Violence", location: "Memphis, TN",
+        shortSummary: "Three Black business owners were lynched by a white mob.",
+        longDetail: "Their successful grocery store competed with a white-owned store, leading to their murder. The triple lynching prompted Ida B. Wells' lifelong anti-lynching crusade.",
+        sourceURL: "https://www.blackpast.org/african-american-history/peoples-grocery-lynching-1892/", isLesserKnown: true, isEraCard: false
+      },
+      {
+        year: 1896, title: "Plessy v. Ferguson", category: "Policy", location: "Nationwide",
+        shortSummary: "The Supreme Court upheld racial segregation, enshrining 'separate but equal' as constitutional law.",
+        longDetail: "This ruling enabled states to systematically underfund Black schools, hospitals, and infrastructure for 60 years, actively engineering an insurmountable wealth gap.",
+        sourceURL: "https://www.blackpast.org/african-american-history/plessy-v-ferguson-1896/", isLesserKnown: false, isEraCard: false
+      },
+      {
+        year: 1898, title: "Wilmington Coup and Massacre", category: "Violence", location: "Wilmington, NC",
+        shortSummary: "The only successful coup d'état in U.S. history: white men overthrew an elected biracial government, killing 60+ Black residents.",
+        longDetail: "The violence explicitly targeted and destroyed one of the wealthiest Black communities and business districts in the American South.",
+        sourceURL: "https://www.blackpast.org/african-american-history/wilmington-coup-1898/", isLesserKnown: false, isEraCard: false
+      },
+      {
+        year: 1910, title: "Slocum Massacre", category: "Violence", location: "Slocum, TX",
+        shortSummary: "Hundreds of armed white men hunted Black residents for 16 hours, killing 8–200 people.",
+        longDetail: "The massacre drove every Black resident from the area permanently, functioning as ethnic cleansing. It has been almost completely erased from official state history.",
+        sourceURL: "https://www.zinnedproject.org/news/slocum-massacre-history/", isLesserKnown: true, isEraCard: false
+      },
+      {
+        year: 1917, title: "East St. Louis Massacre", category: "Violence", location: "East St. Louis, IL",
+        shortSummary: "White mobs conducted a two-day campaign of murder and arson, killing 40–200 Black people.",
+        longDetail: "The attacks left 6,000 Black residents homeless and triggered an NAACP silent protest march down Fifth Avenue in New York.",
+        sourceURL: "https://eji.org/news/history-racial-injustice-east-st-louis-race-riot/", isLesserKnown: false, isEraCard: false
+      },
+      {
+        year: 1919, title: "Elaine Massacre", category: "Violence", location: "Elaine, AR",
+        shortSummary: "After Black sharecroppers formed a union, white mobs and troops killed 100–237 Black residents.",
+        longDetail: "The coordinated slaughter destroyed the sharecroppers' union and kept Black farmers trapped in debt peonage and extreme poverty for another generation.",
+        sourceURL: "https://eji.org/news/history-racial-injustice-elaine-massacre/", isLesserKnown: false, isEraCard: false
+      },
+      {
+        year: 1921, title: "Tulsa Race Massacre", category: "Violence", location: "Tulsa, OK",
+        shortSummary: "A white mob destroyed the 35-block Greenwood District ('Black Wall Street'), killing 100–300 Black residents.",
+        longDetail: "The violence wiped out an estimated $200 million in generational wealth (2026 dollars) in 18 hours. No reparations have ever been paid to the community.",
+        sourceURL: "https://www.neh.gov/article/1921-tulsa-massacre", isLesserKnown: false, isEraCard: false
+      },
+      {
+        year: 1934, title: "FHA Redlining Begins", category: "Financial", location: "Nationwide",
+        shortSummary: "The Federal Housing Administration color-coded Black neighborhoods red, refusing to insure mortgages in those areas.",
+        longDetail: "This guaranteed Black families could not build home equity or access credit, while white families accumulated vast generational wealth through state-subsidized homeownership.",
+        sourceURL: "https://www.blackpast.org/african-american-history/redlining/", isLesserKnown: false, isEraCard: false
+      },
+      {
+        year: 1944, title: "GI Bill Discrimination", category: "Financial", location: "Nationwide",
+        shortSummary: "The GI Bill offered subsidized mortgages and tuition, but local administration allowed systemic denial to Black veterans.",
+        longDetail: "This policy served as a massive driver of the modern racial wealth gap by excluding millions of Black soldiers from the post-war middle class boom.",
+        sourceURL: "https://www.blackpast.org/african-american-history/g-i-bill-1944/", isLesserKnown: false, isEraCard: false
+      },
+      {
+        year: 1971, title: "War on Drugs Declared", category: "Policy", location: "Nationwide",
+        shortSummary: "Explicitly designed to target Black communities, the policy fueled mass incarceration and destroyed families.",
+        longDetail: "Black Americans were subsequently arrested and imprisoned at 3-4x the rate of white Americans despite similar drug usage rates, devastating Black economic mobility.",
+        sourceURL: "https://www.blackpast.org/african-american-history/war-on-drugs/", isLesserKnown: false, isEraCard: false
+      },
+      {
+        year: 1985, title: "MOVE Bombing", category: "Violence", location: "Philadelphia, PA",
+        shortSummary: "Police dropped a military-grade bomb on a Black liberation group's home, killing 11 people including 5 children.",
+        longDetail: "The resulting fire was deliberately allowed to burn, destroying 65 homes. No police officer or city official was ever criminally charged for the massacre.",
+        sourceURL: "https://www.blackpast.org/african-american-history/move-bombing-1985/", isLesserKnown: false, isEraCard: false
+      },
+      {
+        year: 2008, title: "Subprime Mortgage Crisis", category: "Financial", location: "Nationwide",
+        shortSummary: "Major banks systematically steered Black homeowners into predatory subprime loans known internally as 'ghetto loans.'",
+        longDetail: "The predatory targeting caused Black homeowners to lose $194 billion in home equity, effectively erasing 40 years of Black economic progress.",
+        sourceURL: "https://www.blackpast.org/african-american-history/subprime-mortgage-crisis-and-race/", isLesserKnown: false, isEraCard: false
+      },
+      {
+        year: 2020, title: "Modern Police Killings Era", category: "Violence", location: "Nationwide",
+        shortSummary: "ERA SUMMARY: Over 1,000 fatal police shootings occur annually, with Black Americans killed at 3x the rate of whites.",
+        longDetail: "From George Floyd to Breonna Taylor, modern state violence continues the historical legacy of sanctioned racial terror without consistent legal accountability.",
+        sourceURL: "https://mappingpoliceviolence.org/", isLesserKnown: false, isEraCard: true
+      }
+    ];
+
+    // 3. APP LOGIC (Builds the webpage)
+    const container = document.getElementById('timeline-container');
+    const blackWealthBar = document.getElementById('black-wealth-bar');
+    const currentYearEl = document.getElementById('current-year');
+    const currentRatioEl = document.getElementById('current-ratio');
+
+    timelineEvents.forEach((event) => {
+      // Color coding
+      let borderColor = 'border-zinc-700';
+      if (event.category === 'Violence') borderColor = 'border-red-600';
+      if (event.category === 'Financial') borderColor = 'border-amber-500';
+      if (event.category === 'Policy') borderColor = 'border-blue-500';
+
+      const isEra = event.isEraCard;
+      const cardBg = isEra ? 'bg-zinc-900 border-l-4 border-white' : `bg-zinc-900 border-l-4 ${borderColor}`;
+      const badge = event.isLesserKnown ? `<span class="bg-zinc-800 text-zinc-300 text-[10px] px-2 py-1 rounded ml-2 uppercase tracking-widest align-middle">Lesser Known</span>` : '';
+
+      // Create the main card
+      let cardHTML = `
+        <article class="mb-12 transform translate-y-8 opacity-0 transition-all duration-700 ease-out timeline-card" data-year="${event.year}">
+          <div class="${cardBg} p-6 rounded-r-lg shadow-2xl">
+            <div class="flex justify-between items-baseline mb-2">
+              <span class="text-2xl font-black text-white">${event.year}</span>
+              <span class="text-xs font-bold uppercase tracking-wider text-zinc-500">${event.category} • ${event.location}</span>
+            </div>
+            <h2 class="text-xl md:text-2xl font-bold mb-3 ${isEra ? 'text-amber-400' : 'text-white'}">${event.title} ${badge}</h2>
+            <p class="text-zinc-300 text-base md:text-lg leading-relaxed mb-4">${event.shortSummary}</p>
+            
+            <button class="read-more-btn text-amber-500 font-bold text-sm uppercase tracking-widest flex items-center hover:text-amber-400 transition-colors py-2 touch-manipulation cursor-pointer">
+              <span>Read More</span>
+              <svg class="w-4 h-4 ml-1 transform transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
+            </button>
+            
+            <div class="expandable-content pt-4 mt-2 border-t border-zinc-800">
+              <p class="text-zinc-400 text-sm md:text-base leading-relaxed mb-4">${event.longDetail}</p>
+              <a href="${event.sourceURL}" target="_blank" class="inline-block bg-zinc-800 hover:bg-zinc-700 text-white text-xs font-bold py-3 px-5 rounded transition-colors touch-manipulation">
+                View Source Documentation →
+              </a>
+            </div>
+          </div>
+        </article>
+      `;
+
+      // RED DOTS: Inject 2,000 dots for Reconstruction
+      if (event.title === "Reconstruction Terror Era (1865–1877)") {
+        let dots = '';
+        for(let i=0; i<2000; i++) {
+           dots += `<div class="w-1.5 h-1.5 bg-red-600/60 rounded-full m-[1px] inline-block"></div>`;
+        }
+        cardHTML += `
+          <div class="my-20 px-2 timeline-card" data-year="1865">
+            <p class="text-zinc-500 text-sm font-bold tracking-widest uppercase mb-4 text-center">2,000 Documented Victims</p>
+            <div class="w-full bg-zinc-950 p-4 border border-red-900/30 leading-none text-center">${dots}</div>
+            <p class="text-zinc-500 text-sm mt-4 text-center px-4">Each dot represents a documented racial terror lynching during Reconstruction.</p>
+          </div>
+        `;
+      }
+
+      // RED DOTS: Inject 4,400 dots for Jim Crow
+      if (event.title === "The Lynching Epidemic (1877–1950)") {
+        let dots = '';
+        for(let i=0; i<4400; i++) {
+           dots += `<div class="w-1.5 h-1.5 bg-red-600/60 rounded-full m-[1px] inline-block"></div>`;
+        }
+        cardHTML += `
+          <div class="my-20 px-2 timeline-card" data-year="1877">
+            <p class="text-zinc-500 text-sm font-bold tracking-widest uppercase mb-4 text-center">4,400 Documented Victims</p>
+            <div class="w-full bg-zinc-950 p-4 border border-red-900/30 leading-none text-center">${dots}</div>
+            <p class="text-zinc-500 text-sm mt-4 text-center px-4">Each dot represents a documented racial terror lynching between 1877 and 1950.</p>
+          </div>
+        `;
+      }
+
+      container.insertAdjacentHTML('beforeend', cardHTML);
+    });
+
+    // Make "Read More" buttons work
+    document.querySelectorAll('.read-more-btn').forEach(btn => {
+      btn.addEventListener('click', (e) => {
+        const content = e.currentTarget.nextElementSibling;
+        const icon = e.currentTarget.querySelector('svg');
+        content.classList.toggle('expanded');
+        icon.classList.toggle('rotate-180');
+        e.currentTarget.querySelector('span').innerText = content.classList.contains('expanded') ? 'Show Less' : 'Read More';
+      });
+    });
+
+    // Watch the scrolling and update the Top Bar
+    const updateWealthDisplay = (year) => {
+      const dataPoint = wealthTimeline.reduce((prev, curr) => {
+        return (Math.abs(curr.year - year) < Math.abs(prev.year - year) ? curr : prev);
+      });
+      const ratioCents = Math.round(dataPoint.ratio * 100);
+      blackWealthBar.style.width = `${ratioCents}%`;
+      currentYearEl.innerText = year;
+      currentRatioEl.innerText = `${ratioCents}¢ per $1`;
+    };
+
+    const observer = new IntersectionObserver((entries) => {
+      entries.forEach(entry => {
+        if (entry.isIntersecting) {
+          entry.target.classList.remove('opacity-0', 'translate-y-8');
+          updateWealthDisplay(parseInt(entry.target.dataset.year));
+        }
+      });
+    }, { threshold: 0.3 }); 
+
+    document.querySelectorAll('.timeline-card').forEach(card => { observer.observe(card); });
+  </script>
+</body>
+</html>
