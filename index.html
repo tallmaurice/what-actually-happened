@@ -44,9 +44,9 @@
       width: max-content;
       padding: 0 50vw; 
       position: relative;
+      will-change: transform; /* Mobile Performance fix */
     }
 
-    /* PULSING TIMELINE AXIS */
     .time-axis {
       position: absolute;
       top: 50%;
@@ -64,30 +64,27 @@
         100% { box-shadow: 0 0 20px rgba(239, 68, 68, 0.9), 0 0 10px rgba(239, 68, 68, 0.7); background: #71717a; opacity: 1; }
     }
 
-    /* 3D EVENT CARDS */
+    /* UPDATED EVENT CARD: Depth without disorienting 3D Tilt */
     .event-card {
       width: 85vw;
       max-width: 420px;
       margin-right: 4rem;
       position: relative;
       flex-shrink: 0;
-
-      /* 3D Properties */
-      transform-style: preserve-3d;
-      transform: perspective(1200px) rotateY(-10deg) scale(0.95);
-      transition: all 0.6s cubic-bezier(0.25, 0.8, 0.25, 1);
-      box-shadow: -15px 15px 30px rgba(0,0,0,0.8), inset 0 0 0 1px rgba(255,255,255,0.05);
-      background: linear-gradient(145deg, #18181b, #09090b);
+      background: linear-gradient(180deg, rgba(24,24,27,.95), rgba(9,9,11,.95));
+      border-radius: 8px;
+      transform: translateY(8px) scale(0.985);
+      transition: transform 0.4s ease, box-shadow 0.4s ease, filter 0.4s ease;
+      box-shadow: 0 10px 25px rgba(0,0,0,.55), inset 0 0 0 1px rgba(255,255,255,.06);
       z-index: 10;
     }
 
     .event-card:hover {
-      transform: perspective(1200px) rotateY(0deg) scale(1);
-      box-shadow: 0 30px 60px rgba(0,0,0,0.95), inset 0 0 0 1px rgba(255,255,255,0.1);
+      transform: translateY(0) scale(1);
+      box-shadow: 0 22px 55px rgba(0,0,0,.9), inset 0 0 0 1px rgba(255,255,255,.12);
       z-index: 50;
     }
 
-    /* EMPTY YEAR NODES PULSING */
     .empty-node {
       animation: pulse-node 2.5s infinite alternate ease-in-out;
     }
@@ -103,22 +100,6 @@
       margin-right: 4rem;
       position: relative;
       z-index: 10;
-    }
-
-    .dot-wall {
-      display: grid;
-      grid-template-rows: repeat(6, 1fr);
-      grid-auto-flow: column;
-      gap: 6px; 
-      width: max-content;
-      padding: 2rem;
-    }
-
-    .terror-dot {
-      width: 6px;
-      height: 6px;
-      background-color: rgba(220, 38, 38, 0.7);
-      border-radius: 50%;
     }
 
     .expandable-content {
@@ -191,7 +172,7 @@
     "longDetail": "These massacres were deliberate attempts to crush Black political enfranchisement and economic independence right after the Civil War.",
     "deaths": "80+",
     "impact": "Dozens of Black-owned businesses and schools burned.",
-    "image": "https://commons.wikimedia.org/wiki/Special:FilePath/Memphis_Riot_1866.jpg?width=800"
+    "imageFile": "Memphis_Riot_1866.jpg"
   },
   {
     "year": 1867,
@@ -472,7 +453,7 @@
     "longDetail": "The violence explicitly targeted and destroyed one of the wealthiest Black communities and business districts in the American South.",
     "deaths": "60-300",
     "impact": "Total loss of Black municipal power and generational wealth.",
-    "image": "https://commons.wikimedia.org/wiki/Special:FilePath/Wilmington_Race_Riot_1.jpg?width=800"
+    "imageFile": "Wilmington_Race_Riot_1.jpg"
   },
   {
     "year": 1899,
@@ -632,7 +613,7 @@
     "longDetail": "Photographs of his charred body were sold as postcards, representing the absolute nadir of American racial sadism.",
     "deaths": "1",
     "names": "Jesse Washington",
-    "image": "https://commons.wikimedia.org/wiki/Special:FilePath/Jesse_Washington_lynching.jpg?width=800"
+    "imageFile": "Jesse_Washington_lynching.jpg"
   },
   {
     "year": 1917,
@@ -682,7 +663,7 @@
     "longDetail": "The violence wiped out an estimated $200 million in generational wealth (2026 dollars) in 18 hours. No reparations have ever been paid.",
     "deaths": "100-300",
     "impact": "$200+ Million in generational wealth destroyed.",
-    "image": "https://commons.wikimedia.org/wiki/Special:FilePath/Tulsa_race_riot_damage.jpg?width=800"
+    "imageFile": "Tulsa_race_riot_damage.jpg"
   },
   {
     "year": 1922,
@@ -762,7 +743,7 @@
     "longDetail": "The photograph of the lynching crowd became one of the most famous images of racial terror, inspiring the song 'Strange Fruit'.",
     "deaths": "2",
     "names": "Thomas Shipp, Abram Smith",
-    "image": "https://commons.wikimedia.org/wiki/Special:FilePath/Lynchings_of_Thomas_Shipp_and_Abram_Smith.jpg?width=800"
+    "imageFile": "Lynchings_of_Thomas_Shipp_and_Abram_Smith.jpg"
   },
   {
     "year": 1931,
@@ -796,7 +777,7 @@
     "location": "Nationwide",
     "shortSummary": "The Federal Housing Administration color-coded Black neighborhoods red, refusing to insure mortgages in those areas.",
     "longDetail": "This guaranteed Black families could not build home equity or access credit, while white families accumulated vast generational wealth.",
-    "image": "https://commons.wikimedia.org/wiki/Special:FilePath/HOLC_Philadelphia.jpg?width=800"
+    "imageFile": "HOLC_Philadelphia.jpg"
   },
   {
     "year": 1935,
@@ -986,7 +967,8 @@
     "longDetail": "The open-casket funeral exposed the absolute barbarity of white supremacy to the world. His killers were acquitted.",
     "deaths": "1",
     "names": "Emmett Till",
-    "image": "https://en.wikipedia.org/wiki/Special:FilePath/Emmett_Till.jpg?width=800"
+    "imageFile": "Emmett_Till.jpg",
+    "imageDomain": "en"
   },
   {
     "year": 1956,
@@ -1038,7 +1020,7 @@
     "location": "Anniston, AL",
     "shortSummary": "A KKK mob firebombed a bus of civil rights workers and held the doors shut to burn them alive.",
     "longDetail": "When the riders escaped the inferno, the mob beat them with iron pipes. Local police conspired with the Klan.",
-    "image": "https://commons.wikimedia.org/wiki/Special:FilePath/Freedom_Riders_bus_destroyed_by_firebomb.jpg?width=800"
+    "imageFile": "Freedom_Riders_bus_destroyed_by_firebomb.jpg"
   },
   {
     "year": 1962,
@@ -1595,7 +1577,7 @@
     "longDetail": "Simultaneously, COVID-19 disproportionately killed Black Americans and decimated Black-owned businesses due to systemic health and financial inequities.",
     "deaths": "1",
     "names": "George Floyd",
-    "image": "https://commons.wikimedia.org/wiki/Special:FilePath/George_Floyd_mural_in_Minneapolis_02.jpg?width=800"
+    "imageFile": "George_Floyd_mural_in_Minneapolis_02.jpg"
   },
   {
     "year": 2021,
@@ -1648,6 +1630,12 @@
   }
 ];
 
+    // Helper to generate a reliable Wikimedia image redirect URL
+    function buildImgSrc(fileName, domain="commons") {
+      const safeName = encodeURIComponent(fileName.replace(/ /g, '_'));
+      return `https://${domain}.wikimedia.org/w/index.php?title=Special:Redirect/file/${safeName}&width=800`;
+    }
+
     const track = document.getElementById('timeline-track');
 
     let currentYear = 1865;
@@ -1670,10 +1658,19 @@
           if (event.names) namesInfo = `<p class="text-xs text-zinc-400 mb-3 border-l-2 border-zinc-700 pl-3"><strong>Victims/Targets:</strong> ${event.names}</p>`;
 
           let imageInfo = '';
-          if (event.image) imageInfo = `<div class="relative w-full h-48 mb-4 overflow-hidden rounded border border-zinc-700"><img src="${event.image}" class="absolute inset-0 w-full h-full object-cover grayscale hover:grayscale-0 hover:scale-105 transition-all duration-700" alt="Historical photo"></div>`;
+          if (event.imageFile) {
+            const domain = event.imageDomain || "commons";
+            const imgSrc = buildImgSrc(event.imageFile, domain);
+            const fallbackLink = `https://${domain}.wikimedia.org/wiki/File:${encodeURIComponent(event.imageFile)}`;
+            // If image fails, hide it and show a link instead
+            imageInfo = `
+              <div class="relative w-full h-48 mb-4 overflow-hidden rounded border border-zinc-700 bg-zinc-900 flex items-center justify-center">
+                <img src="${imgSrc}" loading="lazy" decoding="async" class="absolute inset-0 w-full h-full object-cover grayscale hover:grayscale-0 hover:scale-105 transition-all duration-700" alt="Historical photo" onerror="this.style.display='none'; this.parentElement.innerHTML='<a class=&quot;text-amber-500 text-xs underline&quot; target=&quot;_blank&quot; href=&quot;${fallbackLink}&quot;>View Archival Photo</a>';">
+              </div>`;
+          }
 
           const cardHTML = `
-            <div class="event-card border-t-4 ${borderColor} p-6 rounded" data-year="${event.year}">
+            <div class="event-card border-t-4 ${borderColor} p-6" data-year="${event.year}">
               <div class="flex justify-between items-baseline mb-2">
                 <span class="text-3xl font-black text-white drop-shadow-lg">${event.year}</span>
                 <span class="text-xs font-bold uppercase tracking-wider text-zinc-500">${event.category} • ${event.location}</span>
@@ -1705,24 +1702,34 @@
         `);
       }
 
+      // 1877 DOT WALL WITH PRE-CARD (Canvas Fix)
       if (currentYear === 1877) {
-        let dots = '';
-        for(let i=0; i<2000; i++) { dots += `<div class="terror-dot"></div>`; }
         track.insertAdjacentHTML('beforeend', `
+          <div class="event-card border-t-4 border-red-600 p-6 flex flex-col justify-center" data-year="1877">
+            <h2 class="text-3xl font-black text-red-500 uppercase tracking-widest mb-2">Reconstruction Terror</h2>
+            <p class="text-zinc-300 text-lg mb-4">You are about to pass <strong class="text-white">2,000+ dots</strong>.</p>
+            <p class="text-zinc-400 text-sm leading-relaxed">Each dot represents a documented person killed in racial terror during this era. This wall visualizes the scale of coordinated violence used to overthrow multiracial democracy in the South.</p>
+          </div>
           <div class="dot-wall-container" data-year="1877">
-            <h3 class="text-red-500 text-center font-black uppercase tracking-widest mb-4 drop-shadow-md">Reconstruction Terror (2,000+ Victims)</h3>
-            <div class="bg-zinc-950/80 border-y border-red-900/50 dot-wall shadow-2xl">${dots}</div>
+            <div class="bg-zinc-950/80 border-y border-red-900/50 shadow-2xl p-4">
+              <canvas id="canvas-1877" style="display:block;"></canvas>
+            </div>
           </div>
         `);
       }
 
+      // 1950 DOT WALL WITH PRE-CARD (Canvas Fix)
       if (currentYear === 1950) {
-        let dots = '';
-        for(let i=0; i<4400; i++) { dots += `<div class="terror-dot"></div>`; }
         track.insertAdjacentHTML('beforeend', `
+          <div class="event-card border-t-4 border-red-600 p-6 flex flex-col justify-center" data-year="1950">
+            <h2 class="text-3xl font-black text-red-500 uppercase tracking-widest mb-2">Jim Crow Lynchings</h2>
+            <p class="text-zinc-300 text-lg mb-4">You are about to pass <strong class="text-white">4,400+ dots</strong>.</p>
+            <p class="text-zinc-400 text-sm leading-relaxed">Each dot represents a documented victim of lynching during the Jim Crow era. Countless others went unrecorded. These public executions were used to enforce total economic and political subjugation.</p>
+          </div>
           <div class="dot-wall-container" data-year="1950">
-            <h3 class="text-red-500 text-center font-black uppercase tracking-widest mb-4 drop-shadow-md">Jim Crow Lynchings (4,400+ Victims)</h3>
-            <div class="bg-zinc-950/80 border-y border-red-900/50 dot-wall shadow-2xl">${dots}</div>
+            <div class="bg-zinc-950/80 border-y border-red-900/50 shadow-2xl p-4">
+              <canvas id="canvas-1950" style="display:block;"></canvas>
+            </div>
           </div>
         `);
       }
@@ -1730,6 +1737,38 @@
       currentYear++;
     }
 
+    // Helper function to draw dots on a canvas instead of thousands of DOM elements
+    function drawDotWall(canvasId, count, rows=6, dotRadius=3, gap=6) {
+      const canvas = document.getElementById(canvasId);
+      if (!canvas) return;
+
+      const cols = Math.ceil(count / rows);
+      const width = cols * (dotRadius * 2 + gap);
+      const height = rows * (dotRadius * 2 + gap);
+
+      canvas.width = width;
+      canvas.height = height;
+
+      const ctx = canvas.getContext('2d');
+      ctx.fillStyle = "rgba(220, 38, 38, 0.8)"; // Red dot color
+
+      for(let i=0; i<count; i++) {
+        const row = i % rows;
+        const col = Math.floor(i / rows);
+        const x = col * (dotRadius * 2 + gap) + dotRadius;
+        const y = row * (dotRadius * 2 + gap) + dotRadius;
+
+        ctx.beginPath();
+        ctx.arc(x, y, dotRadius, 0, Math.PI * 2);
+        ctx.fill();
+      }
+    }
+
+    // Draw the canvases
+    drawDotWall("canvas-1877", 2000);
+    drawDotWall("canvas-1950", 4400);
+
+    // Expandable cards logic
     document.querySelectorAll('.read-more-btn').forEach(btn => {
       btn.addEventListener('click', (e) => {
         const content = e.currentTarget.nextElementSibling;
@@ -1741,7 +1780,13 @@
       });
     });
 
+    // GSAP ScrollTrigger configuration
     gsap.registerPlugin(ScrollTrigger);
+
+    // High-performance mobile configuration
+    ScrollTrigger.config({
+      ignoreMobileResize: true // Prevents layout thrashing on mobile scroll bar hide/show
+    });
 
     function initScroll() {
       let trackWidth = track.scrollWidth - window.innerWidth;
